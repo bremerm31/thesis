@@ -1,0 +1,36 @@
+\section{Introduction}
+\label{sec:intro}
+
+% Motivated by CFL and extension of CFL
+The total variation stability results for scalar conservation laws form the basis of the robustness which has led to the popularity of finite volume and discontinuous Galerkin finite element methods. Roughly, the Courant-Friedrichs-Lax (CFL) condition stipulates that under a restriction on the timestep as a function of wave speed $|\Lambda|$ and mesh size $\Delta x$,
+\begin{equation}
+\Delta t \le \frac{C_{CFL} \Delta x}{|\Lambda|},
+\label{eq:vanilla-cfl}
+\end{equation}
+the numerical solution will weakly converge to a weak solution~\cite{LeVeque1992}. However, for large scale simulations, it is computationally too expensive to check that~\eqref{eq:vanilla-cfl} is enforced due to high communication overhead. In practice, timesteps are set to sufficiently small values.
+
+Enforcing a global CFL condition or using a sufficiently small global timestep tends to be overly conservative for large portions of the mesh. For example, in the case of hurricane storm surge simulations, meshes are used with length scales ranging from $\mathcal{O}(10\,\mathrm{m})$ to $\mathcal{O}(1\,\mathrm{km})$~\cite{Dawson2011}. Local timestepping relaxes the global CFL constraint~\eqref{eq:vanilla-cfl} by allowing different regions of the mesh to advance with different local timesteps. Similar to synchronous timestepping, existing methods are unable to account for significant temporal variations in the wave speed $|\Lambda|$.
+
+\input{adaptive_local_timestepping/images/shock_motivation}
+As a motivating example, consider (inviscid) Burgers' equation ($f(u) = u^2/2$), with initial conditions,
+\begin{equation}
+u_0(x) = \begin{cases}
+1 & u < 0,\\
+0 & u > 0.
+\end{cases}
+\label{eq:shock-ics-mot}
+\end{equation}
+The solution to this problem is a shockwave moving with speed $1/2$ to the right, i.e. $u(x,t) = u_0(x - t/2)$. The local wavespeed is given by $|\Lambda|(x) = |u|(x,t)$. For clarity, we have depicted the schematic in Figure~\ref{fig:shock-motivation}. Consider the cell $j$ downstream of the shock. Were one to naively evaluate the CFL condition~\eqref{eq:vanilla-cfl}, they would incorrectly determine that cell $j$ is able to step arbitrarily far. In doing so, as the shock arrives at cell $j$, it would be unable to pass through the cell, and mass would accumulate at the interface. Such a scheme is unable to converge.
+
+Current theoretical results require knowing the entire temporal history of the flux, before being able to determine that a timestep will be stable. Therefore, one cannot look only at neighboring values, but must consider all flux values between the last update and the next update. While existing works can assess whether or not a timestep will be stable, they fail to describe an algorithm that will advance the system in a manner that guarantees stability. This work addresses this issue.
+
+ %\Cy{This sentence is a little unclear.  Existing works determine a timestep will be stable, but still cannot guarantee stability.  Is it a distinction of local stability versus total variational stability?}
+
+The main result of this paper is a novel adaptive local timestepping algorithm, which is provably total variation stable. The algorithm recasts local timestepping as a discrete event simulation, which allows cells to dynamically coarsen and refine their timesteps. A proof of correctness is supplied to verify that under a sufficiently small minimum timestep, the algorithm will stably advance the system to an arbitrary final time, $\tend$. While the presented algorithm is first order in time, this work makes two fundamental contributions, which will enable local timestepping to become feasible for nonlinear hyperbolic problems in a massively parallel computing environment:
+\begin{enumerate}
+    \item {\em The application of loop invariants in the proof of correctness}: Loop invariants are a proof technique that guarantee a program is formally correct, and have been used with great success in the linear algebra community~\cite{Bientinesi2011}. Given the highly asynchronous context in which our timestepping method is executed, it is extremely difficult to debug such a program. By using these formal correctness techniques we have machinery which ensures that the algorithm achieves desired mathematical properties, e.g. the CFL condition. This not only strengthens the confidence in the results produced by the algorithm, but provides a systematic way to manage the complexity associated with higher order timestepping methods. We expect this proof technique to be indispensable in the extension of this timestepping scheme to higher orders and multiple dimensions.
+    \item {\em A discrete event formulation which removes artificial synchronizations}: Many current timestepping formulations consider only two timestepping groups. Extending these formulations to more timestepping groups is done in a recursive fashion. However, parallelizing these methods then requires a synchronization between each fine timestep to allow for timestepping adapativity. These approaches are fundamentally limited by the parallelism in the finest timestepping group. Using hurricane storm surge as an example, there exist $\mathcal{O}(10^4)$ elements in the finest timestepping group in a mesh that consists of $\mathcal{O}(10^6)$ elements~\cite{Dawson2013}. Amdahl's law severely restricts the scalability of any such formulation. By using a discrete event simulation, we consider arbitrarily many timestepping groups. Furthermore, we can leverage the extensive work done for parallel discrete event simulation to arrive at an efficient parallel implementation. Parallel performance is demonstrated for a single node on Stampede2's Skylake architecture using Devastator, one such parallel discrete event simulator~\cite{Chan2018}. We also introduce a performance model for the adaptive, locally time-stepped method, which is used to both load balance the execution and explain the observed performance gains relative to theoretical speedup bounds.  These results highlight the ability of the algorithm to capitalize on adaptivity on mesh size as well as adaptivity in local wave speeds.
+\end{enumerate}
+
+% Overview of paper
+The remainder of this paper is structured as follows. In Section \ref{sec:prev}, we discuss the current state of the art. Section \ref{sec:method} generalizes existing local timestepping results to account for arbitrary local timestepping. Section \ref{sec:alg} presents the timestepping algorithm, which we accompany with a proof of correctness. Section~\ref{sec:implementation} introduces the Devastator runtime along with performance optimizations for the local timestepping algorithm. Finally, numerical results are presented in Section \ref{sec:results}, where we present one-dimensional results for Burgers' equation and the shallow water equations on a variety of meshes.

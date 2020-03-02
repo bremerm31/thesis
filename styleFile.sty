@@ -1,0 +1,97 @@
+\usepackage{amssymb,array,graphicx,enumerate, esdiff} 
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{relsize}
+\usepackage{verbatim}
+\usepackage{float}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{amsfonts}
+%\usepackage[parfill]{parskip} % skips a line for a new paragraph instead of indenting.
+\usepackage{cancel}
+\usepackage{xfrac}
+\usepackage{layouts}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode} \usepackage{setspace}
+\usepackage{pgfplotstable}
+\usepackage{csvsimple}
+%% SAM: NEXT LINE ADDED TO MAKE BIBLIOGRAPHY APPEAR IN TABLE OF CONTENTS
+\usepackage[nottoc]{tocbibind}
+%% FROM TERESA: NEXT 4 LINES ADDED TO ADD 'CHAPTER' TO T.O.C.
+\usepackage{tocloft}
+\renewcommand{\cftchappresnum}{Chapter }
+\renewcommand{\cftchapnumwidth}{6em}
+\renewcommand{\cftchapaftersnum}{.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Uncomment the following for enable review 
+% mode. Surround all parts you want reviewed
+% with the review command
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage[mathlines]{lineno} % this package puts line numbers on the LHS of the text. good for editing.
+%\linenumbers
+%\definecolor{review_color}{cmyk}{0,0,0,0.75}
+%\color{review_color}
+\usepackage[xcolor]{changebar}
+\cbcolor{red}
+%\newcommand{\review}[1]{\begin{changebar}\textcolor{black}{#1}\end{changebar}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% hyperref settings 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  filecolor=black,
+  urlcolor=black,
+  citecolor=black
+}
+% Cleveref has to be imported after hyperref... 
+\usepackage{cleveref}
+\crefname{appendix}{Appendix}{Appendices}
+% These two lines are to change subsection refs
+% to subchapter refs for upper/lower case
+\Crefname{section}{Chapter}{Chapters}
+\crefname{section}{chapter}{chapters}
+
+% Remove space in itemize
+\usepackage{enumitem}
+\setlist[itemize,1]{leftmargin=*,label=$\boldsymbol\cdot$,noitemsep,nolistsep}
+\setlist[itemize,2]{leftmargin=*,label=$\boldsymbol\cdot$,noitemsep,nolistsep}
+\setlist[itemize,3]{leftmargin=*,label=$\boldsymbol\cdot$,noitemsep,nolistsep}
+
+%%%%%%%%%%%%%% Dissertation style packages %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage[margin=1 in]{geometry} 
+% includefoot below makes the bottom margin include the page numbers.
+\usepackage[margin=1 in, paperwidth=8.5in, paperheight=11.0in, includefoot]{geometry} 
+\usepackage{setspace}
+\usepackage{cite}
+%\singlespacing
+%\onehalfspacing
+\doublespacing
+
+\usepackage[toc]{appendix}
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+{\centering\normalfont%
+   \large% %change this size to your needs for the first line
+   \bfseries}{\chaptertitlename\ \thechapter}{10pt}{%
+   \large %change this size to your needs for the second line
+}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\normalsize\bfseries}
+
+%%%%%%%%%%%%%% Dissertation style packages %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%% Document-specific definitions %%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\theoremstyle{proposition}
+\newtheorem{proposition}{Proposition}[section]
+\theoremstyle{theorem}
+\newtheorem{theorem}{Theorem}[section]
+
+\graphicspath{{figures/}}

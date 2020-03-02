@@ -1,0 +1,25 @@
+% This file contains lst listing snippets which are necessary to embed the lstlistings into subfloats
+% https://tex.stackexchange.com/a/34951
+
+\newsavebox{\submeshlisting}
+\begin{lrbox}{\submeshlisting}
+\begin{lstlisting}[mathescape=true,basicstyle=\scriptsize]
+class Submesh
+  $id \in \mathbb{Z}$
+  $t,\,\tprev,\,\tnext\in \mathbb{Z}$
+  $u,\,\Delta x \in \mathbb{R}^{n_{el}}$
+  $\ell,\,r \in$ Interface
+\end{lstlisting}
+\end{lrbox}
+
+
+\newsavebox{\interfacelisting}
+\begin{lrbox}{\interfacelisting}
+\begin{lstlisting}[mathescape=true,basicstyle=\scriptsize]
+class Interface
+  $id \in \mathbb{Z}$
+  $\tprev,\,\tsync \in \mathbb{Z}$
+  $u,\,\Sigma \hat{F},\,\Delta x \in \mathbb{R}$
+  $K^{int},\,K^{ext} \in \mathbb{R}$
+\end{lstlisting}
+\end{lrbox}

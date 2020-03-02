@@ -1,0 +1,108 @@
+% LaTeX template for Artifact Description appendix used for SC17
+% V20170220
+%% V20170220
+% (C)opyright 2017
+
+% Derived with permission by Michael Heroux (Sandia National Laboratories, St. John's University, MN)
+% from ae-20160509.tex 
+% written by Grigori Fursin (cTuning foundation, France and dividiti, UK) 
+% and Bruce Childers (University of Pittsburgh, USA)
+% (C)opyright 2014-2016
+
+\appendix\section{Artifact Description: Adaptive Total Variation Stable Local Timestepping for Conservation Laws}
+\label{sec:artifact}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Abstract}
+
+As part of the Association for Computing Machinery's reproducibility initiative, this artifact outlines the details of generating the performance comparison in ``Adaptive Total Variation Stable Local Timestepping for Conservation Laws''.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Description (artifact meta information)}
+{\small
+\begin{itemize}
+  \item {\bf Algorithm: } Finite Volume Code with Adaptive Local Timestepping
+  \item {\bf Program: } python, C++14
+  \item {\bf Compilation: } GNU C++14 Compiler
+%  \item {\bf Transformations: }
+%  \item {\bf Binary: }
+%  \item {\bf Data set: }
+  \item {\bf Operating System: } CentOS Linux release 7.6.1810
+  \item {\bf Run-time environment: } Stampede2/Skylake partition
+%  \item {\bf Hardware: }
+%  \item {\bf Run-time state: }
+  \item {\bf Execution: } Parallel/Shared Memory
+%  \item {\bf Output: }
+  \item {\bf Experiment workflow: } Compile; Preprocess meshes; Run simulation.
+%  \item {\bf Experiment customization: }
+  \item {\bf Publicly available?: } Yes
+\end{itemize}
+}
+
+\subsubsection{How software can be obtained}
+Software is not yet open-source.
+
+\subsubsection{Software dependencies}
+Specific version numbers  of software are provided in Table \ref{tab:version}.
+
+\begin{table}
+{
+\footnotesize
+\caption{Version numbers and git hashes of dependencies}
+\label{tab:version}
+\begin{center}
+\begin{tabular}{|c| c|}
+\hline
+Software & Stampede2 \\
+\hline
+\pkg{gcc} & 7.1.0\\
+\hline
+MPI implementation&  impi/17.0.3 \\
+\hline
+Devastator & 2c0e160\\
+\hline
+Python & 3.7.3\\
+\hline
+\pkg{Gurobi} & 9.0.0\\
+\hline
+\end{tabular}
+\end{center}
+}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Installation}
+Assuming all dependencies are available, the code uses GNU Makefile to build both versions of the code. The Devastator version of the code can be generated using
+\begin{lstlisting}
+    make threads=48 problem=XXX ics=YYY
+\end{lstlisting}
+where equation type \lstinline{problem} may either be set to \lstinline{burgers} or \lstinline{swe}. For solving Burgers' equation, \lstinline{ics} may be set to one of \lstinline{constant}, \lstinline{shockwave}, or \lstinline{rarefaction}, and for solving the shallow water equations, \lstinline{ics} may be set to one of \lstinline{constant}, \lstinline{dambreak}, or \lstinline{carrier-greenspan}.
+For the MPI version, the make target is \lstinline{lts-mini-app.mpi}. The problem type and initial conditions can be set using the same \lstinline{problem} and \lstinline{ics} flags used for the Devastator executable.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Experiment workflow}
+\begin{table}
+{\footnotesize
+\caption{Shallow water equations configuration for MPI-Devastator Performance Comparison}
+\label{tab:env-vars-perf-comp}
+\centering
+\input{images/config}
+}
+\end{table}
+
+The workflow requires setting environment variables including input (\lstinline{lts_input_dir}) and output (\lstinline{lts_output_dir}) folders and the name of the mesh file (\lstinline{lts_mesh_file}). The parameters for the runs in Section~\ref{sec:performance-results} are shown in Table~\ref{tab:env-vars-perf-comp}.
+From the root directory, the work flow then requires generating the mesh and mesh splitters as well as any input files,
+\begin{lstlisting}
+    python scripts/mesh_generator.py,
+\end{lstlisting}
+generating an actor partition, which is only needed for the Carrier-Greenspan problem,
+\begin{lstlisting}
+    python scripts/partition_actors.py,
+\end{lstlisting}
+and running the executable. For the synchronous MPI version, we use TACC's \lstinline{ibrun} launcher.
+
+Lastly, we remark that for the polynomial meshes using an MPI simulation, we generate the mesh using an appropriately set \lstinline{warp_type} environment variable, but then manually overwrite the splitters file using the splitters associated with a uniform warp type.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Evaluation and expected result}
+Each simulation run will return the execution time in microseconds to the standard output, and additional output information is written to the output directory.

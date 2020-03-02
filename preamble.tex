@@ -1,0 +1,34 @@
+\usepackage{algorithm,algpseudocode}
+\usepackage{listings}
+\usepackage[caption=false]{subfig}
+\usepackage{multirow}
+\usepackage{todonotes}
+\usepackage{pgf,tikz}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\usetikzlibrary{automata, positioning, arrows}
+
+\newtheorem{lemma}{Lemma}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator{\range}{range}
+\newcommand{\intr}{\text{int}}
+\newcommand{\extr}{\text{ext}}
+\newcommand{\tend}{t_{\text{end}}}
+\newcommand{\tprev}{\lfloor t \rfloor}
+\newcommand{\tnext}{\lceil t \rceil}
+\newcommand{\tsync}{t_{\text{sync}}}
+\newcommand{\ssync}{s^{\mu}_{j,j+1}}
+\newcommand{\ssyncnext}{s^{\mu+1}_{j,j+1}}
+\newcommand{\pq}{\mathcal{Q}}
+\newcommand{\update}{\mathcal{U}}
+\newcommand{\pushflux}{\mathcal{PF}}
+\newcommand{\nsbmsh}{n_{\text{sbmsh}}}
+
+\newcommand{\pkg}[1]{\textsc{#1}}
