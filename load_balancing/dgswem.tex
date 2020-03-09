@@ -1,0 +1,45 @@
+\section{Forecasting Hurricane Storm Surge}
+\label{sec:dgswem}
+
+During hurricane events, the most dangerous and costliest portion of the hurricane is the surge pushed onto the coast by the wind. In order to accurately assess the impact of a hurricane in coastal regions, accurate storm surge modeling is required.  We derive such a model by simulating the sea surface using the 2D depth-averaged shallow water equations. 
+We additionally incorporate the effects of atmospheric pressure changes at the free surface, Coriolis effects, bottom friction, and a wind forcing source term.
+
+These equations and algorithms are presented in \cite{dawsonhurr} using a discontinuous Galerkin (DG) method. The solution is approximated on an unstructured mesh, which provides resolution on the order of 10 meters near coastal regions of interest.
+High-order DG methods are attractive due to their relatively local stencil, high arithmetic intensity, and stability, which allow for explicit timestepping. The topic of higher-order DG methods for the shallow water equations is a topic of active research \cite{warb,brus,giraldo,Brus2017}.
+
+In order to understand the local nature of the kernel, we borrow the language from \cite{warb}
+\begin{equation}
+\mathcal{M} \frac{\partial Q_H}{ \partial t} = \mathcal{N}(Q_H) + \mathcal{S}(Q_H^{+},Q_H^{-}),
+\label{eq:dgkernel}
+\end{equation}
+where $Q^H$ denotes the degrees of freedom, $\mathcal{M}$ denotes the update kernel, $\mathcal{N}$ corresponds to the area kernel, which can be computed entirely locally, and $\mathcal{S}$ corresponds to the surface kernel, which requires computation at the element interface. The system of differential equations is then temporally discretized using a Runge-Kutta (RK) method.
+
+The above numerical model is parallelized by distributing elements across a set of concurrent processes (referred to as {\em ranks}) that cooperate by message passing.
+In \eqref{eq:dgkernel}, both the update kernel and the area kernel can be computed entirely locally (independent of other elements).
+The edge kernel is the only portion of the DG algorithm that may require non-local information, so elements not on the same rank must communicate over the network.
+With explicit timestepping, this results in a task dependency graph that exposes a large amount of task parallelism and asynchrony.
+%In comparison, implicit timestepping methods require a global barrier, requiring significantly more network traffic as well as reducing the amount of work that can be completed locally.
+
+%The second aspect that makes DG methods attractive is the ease with which we can achieve high order accuracy.
+%For high-order methods in general, the error of the solution, $e$ can be estimated as
+%\begin{equation}
+%\label{eq:err}
+%e = \mathcal{O}(h^{p+1})
+%\end{equation}
+%where $h$ is some characteristic mesh length scale, and $p$ is the polynomial order of the basis used to approximate the solution of the shallow water equations.  From \eqref{eq:err}, we see that by increasing $p$, we can drastically increase $h$, i.e. coarsen the mesh, without reducing solution quality.
+%In practice, there are two caveats to this feature.
+%Firstly, the shallow water equations admit discontinuous solutions; at these regions, the convergence rate is degraded to first order, i.e. $e = \mathcal{O}(h)$.
+%Secondly, while the number of elements can be drastically reduced for a high-order run, more sophisticated Runge-Kutta timestepping methods are required, reducing both the admissible timestep and increasing the number of stages required to advance the method one timestep.
+
+
+% \subsection{Source of irregularity}
+One of the key aspects of a storm surge code is its ability to simulate inundation.
+Due to numerical artifacts, regions of negative water column height may occur throughout the simulation, rendering the shallow water equations meaningless, both mathematically and physically.
+To remedy this, an additional slopelimiter is applied after the update kernel.
+We use the limiter proposed in \cite{bunya}, which locally examines elements after each update and fixes problematic regions.
+One of the key features of this algorithm is its ability to classify elements as either wet or dry.
+% Since we are approximating our solution on a static mesh.
+The performance implication of this classification is that dry elements require almost no work, thus as the hurricane inundates the coast, elements become wet in localized regions, causing load imbalance.
+
+%For the purposes of this paper, we have selected a 3.6 million %element mesh %need mesh here
+%and are simulating a Storm 36 from the FEMA synthetic storm dataset %\cite{FEMA}. The simulation was set to run for 16 days simulation time with a timestep of 1 second. The run was performed on Edison utilizing 1200 cores.

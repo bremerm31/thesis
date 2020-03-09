@@ -1,0 +1,23 @@
+\section{Related Work}
+\label{sec:related}
+
+In adaptive mesh refinement (AMR) codes and $hp$-adaptive finite elements, dynamic load balancing typically relies one of three approaches: (1) graph partitioning using space filling curves, known as geometric partitioning \cite{zoltan1,OG,blaise,Ferreira2017} (2) graph partitioning algorithms, such as those provided in the METIS and SCOTCH libraries \cite{realscotch,scotch,realmetis,zoltan1,rmmetis}, or (3) diffusion or refinement based approaches \cite{diff1}.
+The simulation of coastal inundation introduces irregularity, which decouples the memory and load balancing constraints.
+%, i.e. balancing elements across processors is not sufficient
+To the authors' knowledge, the only paper that uses dynamic load balancing to address this issue is \cite{wdgpu}. However, their approach only balances load on structured grids, which may result in memory overflow.
+Local timestepping methods introduce similar irregularity.
+Seny et al. have proposed a static load balancing scheme using multi-constraint partitioning in \cite{seny}.
+However, they note the dynamic load balancing problem as an open one.
+Some examples of load balancing algorithm evaluations in the context of task-based execution models include the use of cellular automata \cite{ca}, hierarchical partitioning \cite{charmha}, and gossip protocols \cite{charmgossip}.
+
+There has been much previous work on the use of system-level hardware simulation to evaluate how existing applications will behave on future architectures (e.g. \cite{Janssen:2011,Mubarak:2014,Zhang:2016,Jain:2016,Barrett:2012}).
+For example, the SST-macro simulator~\cite{janssen10-ijdst} allows performance evaluation of existing MPI programs on future hardware by coupling skeletonized application processes with a network interconnect model.
+Previous work has investigated the impact of various static task placement strategies for AMR multigrid solvers using simulation techniques~\cite{Chan:2016}.
+Evaluation of various load balancing strategies using discrete event simulation has been conducted in~\cite{zheng-thesis}, and the use of particular asynchronous load balancing algorithms has been discussed in~\cite{zheng-async-lb,pearce-async-lb}.
+However, \cite{zheng-async-lb} examines only a simple greedy algorithm that ignores communication costs, and \cite{pearce-async-lb} examines an offload model that still requires synchronization to enter and exit the load balancing phase.
+Another framework, StarPU with SimGrid \cite{Stanisic2015,Stanisic2015fast}, allows estimation of task-based execution on a parameterized hardware model, emphasizing the simulation of heterogeneous nodes with GPUs. However, these papers leave modeling of distributed memory simulations as a subject of future work.
+These existing simulators do not natively model one-sided, active message communication or asynchronously migratable objects, where the migration of objects happens simultaneously during the execution of computational tasks.
+
+Our simulation approach combines an application task dependency graph with a performance model to enable the evaluation of an application (DGSWEM) that {\em does not yet have a task-based implementation}, allowing us to forecast its performance with different load balancing strategies and estimate the benefits on large-scale runs.
+Furthermore, the interplay between the multi-constraint nature of the storm surge application and the effectiveness of the load balancing strategies has not been previously investigated, to the best of our knowledge.
+% As future work, we could integrate our application task-graph model with a more detailed network interconnect model, such as SST-macro, to enhance our simulation fidelity.

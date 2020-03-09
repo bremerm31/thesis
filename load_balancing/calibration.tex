@@ -1,0 +1,143 @@
+\section{Performance Model Calibration}
+\label{sec:calibration}
+\subsection{Compute Cost Model}
+\label{sec:compute-cost-model}
+Since DGSim utilizes a skeletonized form of the kernel, we developed a model to estimate the time to execute each task.
+%Our model is obtained by timing the DGSWEM application for a simple problem and then multiplying the execution time by the fraction of wet elements. 
+As there is a limitation associated with the amount of fine-grain parallelism we can expose due to scheduling overhead, we agglomerate elements together into \emph{tiles},
+% -- borrowing the nomenclature from finite difference methods-- 
+whose size is sufficiently large such that the performance improvement obtained via exposing more parallelism to the system amortizes the scheduling overhead. Furthermore, more tiles than worker threads are assigned to each rank. This oversubscription of compute resources allows the scheduler to hide message latencies.
+
+ Given a tile $\mathcal{T}$, that consists of the elements $\{\Omega_e\}$, we approximate the execution time to advance $\mathcal{T}$ by one RK stage, $t_{\mathcal{T}}$ by 
+$t_{\mathcal{T}} = \sum_{\Omega_e} \omega_e \tau_e$ 
+where $\omega_e$ is 1 if the element is wet and 0 if it is dry, and $\tau_e$ is the time required to advance 1 element by 1 RK stage.
+Timing DGSWEM using polynomial order $p=2$ with a modal filter and the wetting and drying limiter on a single Edison node, we measured $\tau_e$ to be $2.62\,\mathrm{\mu s}$.
+%\begin{comment}
+%The timing results are presented in Table \ref{tab:cost-model}. To maintain consistent memory bandwidth usage, the degrees of freedom are held constant as the polynomial order varies. %, i.e. since the degrees of freedom on an element are $\mathcal{O}(p^4)$, we appropriately coarsen the mesh. 
+%\begin{table}
+%\small
+%  \begin{center}
+%    \begin{tabular}{|c|c|c|}
+%      \hline
+%      \multicolumn{3}{|c|}{Compute Cost Model} \\
+%     \hline
+%$p$ & Mean time (in $\mu s$) & Standard Deviation (in $\mu s$)\\
+%\hline 
+%1 & 1.50 & 0.010\\
+%\hline 
+%2 & 2.62 & 0.025\\
+%\hline 
+%3 & 4.90 & 0.062\\
+%\hline 
+%4 & 8.07 & 0.083\\
+%\hline 
+%5 & 13.38 & 0.28\\
+%\hline
+%    \end{tabular}
+%    \caption{Computational cost of advancing an element forward by 1 RK stage as a function of polynomial order $p$ using DGSWEM. The time elapsed was reported every 28800 RK stages, these outputs were recorded 6 times across 24 cores. Dividing appropriately we obtain the amount of time required to compute 1 element.}
+%    \label{tab:cost-model}
+%  \end{center}
+%  \vspace{-12mm}
+%  \end{table}
+%\end{comment}
+
+%\todo{please make sure this edited paragraph is still correct}
+To determine the wet/dry status of elements at each time step, we use a hurricane simulation of a synthetic storm from a FEMA flood insurance test suite throughout this paper. The test problem is a 4 day simulation with a timestep of 0.25 seconds using a 2-stage RK method on a 3.6 million element unstructured mesh.
+Using this benchmark, the wet/dry state of each element is recorded every 1200 time steps in DGSWEM, and the recorded states are then interpolated for intermediate time steps in DGSim.
+
+Due to constraints on the length of simulation, DGSim only computes a 10th of the total timesteps. This conservatively approximates the available work to hide the load balancing costs. The change in wet/dry fraction is scaled in a consistent manner to ensure that the entire hurricane is simulated.
+The other contributors to compute time are the task scheduler overhead and the cost to run the load balancer.
+We use timers to measure the actual costs of these computations on the host machine.
+
+\subsection{Communication Cost Model}
+
+In order to model the delay incurred by messages sent between ranks in
+the machine, we defined a hierarchical communications model with varying
+costs associated with sending messages across different memory levels.
+On many current and future memory architecture designs, the memory on
+a compute node is split into separate partitions.
+%, each with a dedicated memory controller.
+In such a configuration, the cost of accessing data from the closest
+partition is lower than for distant partitions, thus
+creating non-uniform memory access (NUMA) domains.
+%For example, on the NERSC Edison supercomputer~\cite{edison-config},
+%each node contains two NUMA domains, one for each CPU socket containing
+%12 compute cores.
+
+%Our execution model instantiates one rank per NUMA domain, each with
+%eleven {\it worker threads} dedicated to executing compute tasks and one
+%{\it communication thread} dedicated to send and receive active messages.
+%We also model messages between nodes, resulting in three message categories:
+%intra-NUMA, inter-NUMA, and inter-node.
+Given a message source, destination, and size,
+our simulator's performance model estimates the delivery delay by
+summing per-message (latency/overhead) and per-byte
+(bandwidth) costs over the path connecting the ranks.
+%While this is a relatively simple performance model, future work
+%may incorporate a more accurate network simulator such as SST
+%\cite{janssen10-ijdst} to capture effects such as link congestion.
+For our experiments, we utilize performance model parameters simulating
+a machine similar to Edison~\cite{edison-config}.
+Table~\ref{tab:comm-model} summarizes the parameters used in our
+model to estimate message delivery costs.
+We conservatively assume that communication links are utilized
+by all cores that share them (e.g. multiples cores sharing the DDR3 bus).
+Since DGSim provides a dedicated communication thread per socket,
+the QuickPath and Aries endpoints are shared by only one or two
+threads, and thus would see minimal contention.
+
+\begin{table}
+  \caption{Message transmission costs}
+  \label{tab:comm-model}
+  \footnotesize
+  \begin{center}
+    \begin{tabular}{|c|c|c|}
+      \hline
+      \multicolumn{3}{|c|}{Communications Performance Model} \\
+      \hline
+      Link & Latency (per-message) & Bandwidth (per-core) \\
+      \hline
+      1866MHz DDR3 & 77 $\mathrm{ns}$ & 4.3 GiB/s \\
+      \hline
+      Intel QuickPath & 132 $\mathrm{ns}$ & 11.5 GiB/s \\
+      \hline
+      Cray Aries & 1.2 - 1.5 $\mathrm{\mu s}$ & 0.2 - 9 GiB/s \\
+      \hline
+    \end{tabular}
+  \end{center}
+  \vspace{-5mm}
+\end{table}
+
+All messages are subject to two memory copies over the DDR3 memory bus:
+one to copy the message from application memory to a communications buffer,
+then an additional copy at the destination from the communications buffer to the final address.
+For intra-NUMA messages, these two copies constitute the entire
+delivery cost.
+The measured STREAM bandwidth on Edison is 103 GiB/s
+\cite{edison-config}, thus the per-core bandwidth is 4.3 GiB/s.
+
+For inter-NUMA messages, messages must additionally traverse the
+inter-socket communications bus.
+On Edison, the sockets are connected via the Intel QuickPath interconnect
+\cite{intel-qp-whitepaper}.
+%We divide the protocol-laden QPI bandwidth
+%(11.5 GiB/s) % = 12.8 GiB/s / 1.11)
+%by the number of threads that may send messages
+%over each link.
+Since no worker threads may send or receive messages, the dedicated communications
+thread can use the full uni-directional bandwidth (11.5 GiB/s) for sending
+messages.
+The latency for intra-/inter-NUMA messages is measured using Intel\textregistered Memory Latency Checker--v3.5 with a 200 MB buffer on NERSC's Edison.
+
+For inter-node messages, we parameterize our model using data from
+performance benchmarks conducted using the
+Cray Aries interconnect~\cite{Faanes:2012:cascade}.
+Although the Aries interconnect has a dragonfly topology, for simplicity, we
+assume a uniform cost of communication between ranks.
+Figures 7 and 8 in that paper specify how the message latency and
+bandwidth costs vary with message size.
+Since we simulate two communicating ranks per node (one
+per socket), we conservatively halve the reported bandwidth.
+Section~\ref{sec:experiments:validation} presents a validation of our
+performance model, comparing our modeled execution time versus
+empirically observed execution time of a skeletonized DGSWEM implementation.

@@ -1,0 +1,149 @@
+\section{The DGSim Simulator}
+\label{sec:dgsim}
+Our DGSim simulator utilizes discrete event simulation to model the
+execution of the parallel application.
+It is expected to only run {\em skeletonized} applications, where heavy
+computation and large data allocations are omitted for efficiency.
+Every thread in the simulation schedules events into a global priority queue
+keyed on {\em virtual time}, so that events are processed in the
+correct simulation order.
+Threads ``burn'' virtual time to simulate the execution of heavy computational
+tasks, and message arrival times are delayed to capture communication costs.
+This method permits efficient large-scale
+simulation while retaining the salient computation and communication
+characteristics of the program execution.
+With DGSim, we are able to rapidly evaluate hundreds of simulation trials with different
+parameterizations in 4,000 core-hours compared to over 21,000,000 core-hours
+had we run DGSWEM itself, roughly translating to a 5,200x speed-up.
+
+% (i.e. "burn" 10,000 cycles of time here, or send a 64KB message there).
+
+DGSim is designed from the ground up to model a very aggressive
+asynchronous execution framework, which is comprised of three layers.
+%The lowest layer embodies a traditional distributed 
+%parallel machine consisting of multi-threaded processes communicating 
+%via messaging. Above that sits the active global address space (AGAS) 
+%for managing locality. Finally, the layer to which the application 
+%binds itself is that of a dataflow tasking model.
+The lowest layer of our framework, the parallel 
+machine, mirrors the communicating multi-threaded processes prevalent 
+in current extreme scale computing.
+%Our targeted configuration is the 
+%fat-process model, where there are relatively few processes per node,
+%but each contains threads dedicated to the physical cores.
+All inter-processes communication is expressed through one-sided,
+point-to-point active messages, each containing a bound function.
+% (code address + all needed arguments).
+%All processes are assumed to be running the same executable 
+%binary so that any function available to the sender will be known by 
+%the recipient. Upon receipt of a message, the destination process 
+%simply executes the given function against the arguments. Sending 
+%messages and polling for incoming messages are the only provided 
+%communication primitives. The semantics of sending a message are that 
+%the message will eventually be executed by the recipient so long as 
+%they periodically poll for incoming messages, but with no ordering 
+%guarantees. 
+%As a result, the only way for a sender to be notified of a message's 
+%delivery is for the recipient to explicitly send a message back. 
+%This 
+%highlights the very asynchronous nature of active messages: they 
+Active messages impose no synchronization, and thus encourage a very
+asynchronous methodology.
+%The threads within a process are intended to execute in the coherent 
+%shared memory programming model common today, but to avoid having to 
+%track individual loads and stores in our simulator, we've chosen to 
+%restrict and abstract how threads may signal each other. 
+Each process contains a {\em master} thread responsible for executing
+active messages, and all other threads belong to a pool of {\em worker} threads.
+%There is a single-producer 
+%multi-consumer active message queue with which the master pushes 
+%messages for an arbitrary worker to execute, and likewise, a 
+%multi-producer single-consumer queue to which workers push messages 
+%that the master executes.
+Messages from other processes are only 
+executed by the master thread, but any thread may send messages to 
+other processes.
+%which it can expect to have injected into the network 
+%concurrently with respect to other sends leaving that process.
+%Our threading model's restrictive nature is severe in that there are 
+%innumerably many applications that do not manage their threads this 
+%way. But we feel that this design point is valid in the context of 
+%asynchronous execution. The message queues connecting threads are 
+%non-synchronizing and hence do not block producers which allows for 
+%pipelining of work between master and workers. Also, 
+The dedication of the master thread to handling
+incoming messages and managing worker threads may seem wasteful,
+but this fits asynchronous 
+execution well as it ensures there is a core that will remain 
+attentive to servicing incoming messages.
+Production asynchronous runtimes such as Charm++
+usually dedicate at least one CPU core for communication and scheduling.
+%We believe 
+%this is a crucial factor for distributed dynamic scheduling algorithms 
+%where processes are continuously probing the status of their peers.
+%Notable production asynchronous runtimes such HPX and Charm++ also usually
+%provision at least one CPU core to the task of handling communication
+%and/or scheduling for this reason, thus validating the merit of our design.
+
+The second layer of the framework's stack is our interpretation of 
+Active Global Address Space (AGAS) \cite{hpx}. This is a software layer
+that allows the user to place parts of their application state in a 
+named-object store without having to explicitly manage where
+objects reside. Users simply {\tt visit} objects by sending an active 
+message to a name (as opposed to a process id) and the function will be 
+executed on the process currently holding the object.
+To migrate an object, there is a {\tt relocate} function that takes a 
+name and a target process id and will cause the named object to 
+migrate from wherever it currently resides to the target.
+Relocates and visits can be issued concurrently from any 
+number of processes without any synchronization whatsoever.
+%AGAS guarantees that 
+%visits will track down even the most frantically relocating objects. 
+%The AGAS implementation is pure in the sense that it receives no 
+%special attention from the simulator. It is built solely on active 
+%messages as a distributed hash table spanning the processes to track 
+%and cache object locality. We note that at this point, our design comes
+%quite close 
+This design is similar to the chare/actor model of Charm++.
+They too express parallel computation as asynchronous method invocations
+between relocatable objects.
+
+The top layer is a distributed tasking layer, which allows
+the application to describe named units of non-blocking work that are executed 
+on worker threads.
+%The application may 
+%attach priority values to tasks to influence the order satisfied tasks 
+%are executed.
+%They are non-blocking, meaning that once begun, 
+%a task can not wait for any event dependent on the execution of another 
+%task.
+Tasks mainly communicate via satisfaction of another task's dependencies.
+%, but they may not 
+%poll for incoming messages (as they are forbidden by virtue of 
+%executing on a worker thread).
+The task graph has no explicit hierarchy 
+(no parent or sub-tasks), and all dependencies are managed through task 
+names. When a task has computed data required by other tasks, that task 
+sends a satisfaction containing the data to its successors.
+%A satisfaction consists of a 
+%task name, a credit count, and an active message. When the task runtime 
+%sees a task name for the first time, a new task is instantiated. Upon 
+%instantiation, a task must know, as a function of its name, its initial 
+%credit count. The receipt of a satisfaction causes the active message 
+%payload to be executed upon the task's state (to deliver required 
+%data), and the task's credit count to be decremented by the 
+%satisfaction's credit value. If a task's credits reach zero, the task 
+%is considered satisfied and will be pushed to a worker thread for 
+%execution after which the task will be destroyed. 
+%Thanks to good engineering of our layers, 
+All task satisfactions are sent through AGAS {\tt visit}s, allowing 
+task migrations to be issued independently of the task graph scheduler.
+%This makes the exploration of schedulers tractable 
+%as locality decisions and task management are decoupled units of 
+%software, and the 
+This separation allows the scheduling logic to reside entirely in the
+application code, giving it easy access to pertinent metadata, and
+enables task migration to occur concurrently with task execution.
+Thus we have no need to explicitly enter or exit a load balancing phase.
+%There is no need to enter or exit a load balancing phase -- task
+%migrations will occur completely behind the scenes.

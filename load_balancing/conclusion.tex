@@ -1,0 +1,20 @@
+\section{Conclusion and Future Work}
+
+%\todo[inline]{The impact of future architecture design on the performance of our application is a topic we plan to explore in future work.}
+
+%punchline
+Hurricane storm surge simulation stands to benefit greatly from the dynamic load balancing techniques outlined in this paper. 
+The irregularity introduced by flooding requires load balancers to simultaneously account for both memory and compute load.
+We have presented a dynamic diffusion-based and a semi-static load balancing approach for an asynchronous, task-based implementation of DGSWEM.
+To enable rapid prototyping and evaluation of these load balancing strategies, we simulated DGSWEM using a discrete event simulation approach, which
+allowed us to evaluate configurations 5,000 times faster than running the actual code (in terms of core-hours).
+We found that static multi-constraint partitioning gives a speed-up of 1.28 over static single-constraint balancing. Both semi-static and asynchronous diffusion approaches worked very well, achieving speed-ups of 1.2 over the static multi-constraint partitioning strategy at 1200 cores. The asynchronous diffusion approach scaled the most well, maintaining a speed-up of 1.52 over the original static partitioning approach at 6000 cores. Furthermore, the asynchronous diffusion approach migrated an order of magnitude fewer tiles than the semi-static approach.
+
+The irregularity of the hurricane limits the need for more sophisticated approaches. By only simulating every tenth timestep, we have exaggerated the rate of change of the imbalance by a factor of ten. In practice, we expect the methods proposed here to completely balance the compute load. Implementing these load balancing strategies in DGSWEM is a topic of future work.
+
+%outline problem
+The nature of simulating DGSWEM opens up many interesting avenues of future research.
+We plan to model parallel performance behavior of DGSWEM on future supercomputer architectures, e.g. x86 many-core, GPU, and RISC cores.
+Additionally, we would like to perform a co-design exploration of algorithmic and software optimizations in conjunction with the hardware parameter space.
+Increased communication costs on future architectures will likely play a role in choosing between load balancing strategies that trade between load balance quality, application communication costs, and tile migration costs.
+% For example, asynchronous diffusion would have much lower tile migration costs compared to the semi-static approaches at the expense of worse load balance.  SS would have higher tile migration costs compared to SS2, but may have lower application communication costs due to better tile coherence (less shattering).
