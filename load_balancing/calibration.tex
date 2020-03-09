@@ -77,7 +77,7 @@ summing per-message (latency/overhead) and per-byte
 %may incorporate a more accurate network simulator such as SST
 %\cite{janssen10-ijdst} to capture effects such as link congestion.
 For our experiments, we utilize performance model parameters simulating
-a machine similar to Edison~\cite{edison-config}.
+a machine similar to Edison~\cite{Edison}.
 Table~\ref{tab:comm-model} summarizes the parameters used in our
 model to estimate message delivery costs.
 We conservatively assume that communication links are utilized
@@ -114,12 +114,12 @@ then an additional copy at the destination from the communications buffer to the
 For intra-NUMA messages, these two copies constitute the entire
 delivery cost.
 The measured STREAM bandwidth on Edison is 103 GiB/s
-\cite{edison-config}, thus the per-core bandwidth is 4.3 GiB/s.
+\cite{Edison}, thus the per-core bandwidth is 4.3 GiB/s.
 
 For inter-NUMA messages, messages must additionally traverse the
 inter-socket communications bus.
 On Edison, the sockets are connected via the Intel QuickPath interconnect
-\cite{intel-qp-whitepaper}.
+\cite{Intel2009}.
 %We divide the protocol-laden QPI bandwidth
 %(11.5 GiB/s) % = 12.8 GiB/s / 1.11)
 %by the number of threads that may send messages
@@ -131,7 +131,7 @@ The latency for intra-/inter-NUMA messages is measured using Intel\textregistere
 
 For inter-node messages, we parameterize our model using data from
 performance benchmarks conducted using the
-Cray Aries interconnect~\cite{Faanes:2012:cascade}.
+Cray Aries interconnect~\cite{Faanes2012}.
 Although the Aries interconnect has a dragonfly topology, for simplicity, we
 assume a uniform cost of communication between ranks.
 Figures 7 and 8 in that paper specify how the message latency and

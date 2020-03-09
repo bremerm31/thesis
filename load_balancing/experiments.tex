@@ -41,7 +41,7 @@ The parallel efficiencies for the two simulations are shown in Figure~\ref{fig:c
 
 \begin{figure}
   \centering
-\includegraphics[width=0.45\textwidth]{{load_balancing/images/hurricane_validation_p2}.pdf}
+\includegraphics{{load_balancing/images/hurricane_validation_p2}.pdf}
 \caption{Comparison between the parallel efficiency of the simulated performance (DGSim) and the skeletonized application code (DGSWEM) on NERSC's Edison supercomputer for 1200 to 6000 cores for the Storm36 hurricane using Machine and DGSWEM parameters as outlined in Table~\ref{tab:lbc:machine}. Each configuration was run five times. The standard deviations for a given core count were each below 1\%.}
 \label{fig:cal:validation}
 \end{figure}
@@ -52,7 +52,6 @@ In order to compare the load balancing algorithms outlined in Section \ref{sec:b
 \begin{figure*}
 \centering
 \includegraphics{{load_balancing/images/imbalance}.pdf}
-\vspace{-5mm}
 \caption{Load imbalance for Storm 36 using 1200 cores with the configuration outlined in Table \ref{tab:lbc:machine}. The following load balancing strategies were evaluated: static (ST), multi-constraint static (MCS), asynchronous diffusion (AD), and semi-static (SS).}
 \label{fig:lbc:imb}
 \end{figure*}
@@ -87,23 +86,22 @@ where $\max T$ is maximum load on a given rank and $\overline{T}$ is the average
 \begin{figure*}
     \centering
     \subfloat[][Static\label{fig:ci:st}]{
-        \includegraphics[width=0.22\textwidth]{{load_balancing/images/st_comput_int}.pdf}
+        \includegraphics[width=0.44\textwidth]{{load_balancing/images/st_comput_int}.pdf}
     }
 \quad
     \subfloat[][Multi-constraint static\label{fig:ci:mcs}]{
-        \includegraphics[width=0.22\textwidth]{{load_balancing/images/mcs_comput_int}.pdf}
+        \includegraphics[width=0.44\textwidth]{{load_balancing/images/mcs_comput_int}.pdf}
     }
-\quad
+\\
     \subfloat[][Asynchronous diffusion\label{fig:ci:ad}]{
-        \includegraphics[width=0.22\textwidth]{{load_balancing/images/ad2_comput_int}.pdf}
+        \includegraphics[width=0.44\textwidth]{{load_balancing/images/ad2_comput_int}.pdf}
     }
 \quad
     \subfloat[][Semi-static\label{fig:ci:ss}]{
-        \includegraphics[width=0.22\textwidth]{{load_balancing/images/ss_comput_int}.pdf}
+        \includegraphics[width=0.44\textwidth]{{load_balancing/images/ss_comput_int}.pdf}
     }
     \caption{Compute intensities of the various load balancing strategies for a 1200 core simulation. For clarity, the ranks have been sorted according to average compute intensity.}
     \label{fig:ci}
-    \vspace{-2mm}
 \end{figure*}
 
 Since the traditional static load balancing approach solely distributes tiles to ranks to satisfy the memory constraint, it is expected that the static curve in Figure \ref{fig:lbc:imb} has a high imbalance. This is reflected in Figure \ref{fig:ci:st}, where roughly half the ranks are underutilized until the storm inundates the coast. This load profile is consistent with the ~60\% parallel efficiency observed in Figure \ref{fig:cal:validation}.
@@ -129,7 +127,7 @@ The asynchronous diffusion load balancing scales the best with $E^{AD}_{6000}/E^
 
 \begin{figure}
 \centering
-\includegraphics[width= 0.45\textwidth]{{load_balancing/images/strong_scaling_p2_tpt4_figure}.pdf}
+\includegraphics{{load_balancing/images/strong_scaling_p2_tpt4_figure}.pdf}
 \caption{Parallel efficiency of the various load balancing strategies on Edison for 1200 to 6000 cores.}
 \label{fig:sss:res}
 \end{figure}

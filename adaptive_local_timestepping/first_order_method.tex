@@ -99,8 +99,8 @@ Using the CFL condition~\eqref{eq:cfl-max}, and $C_j(\tau) \le 0 \le D_j(\tau)$ 
 \end{align*}
 Let $U^* = \sup_{\tau \in [t_j^n,t_j^{n+1})} \{ |U_j^n|, |U_{j-1}(\tau)|, |U_{j+1}(\tau)| \}$, then \
 \begin{align*}
-|U^{n+1}_j| & \le \left( 1 + \frac{1}{t_j^{n+1}} \int_{t_j^n}^{t_j^{n+1}} \big[ C_j(\tau) - D_j(\tau) \big]\mathrm{d} \tau \right) U^* \\
-& - \left( \frac{1}{t_j^{n+1}} \int_{t_j^n}^{t_j^{n+1}} C_j(\tau) \right) U^* + \left( \frac{1}{t_j^{n+1}} \int_{t_j^n}^{t_j^{n+1}} D_j(\tau) \right) U^*\\
+|U^{n+1}_j| & \le \left( 1 + \int_{t_j^n}^{t_j^{n+1}} \big[ C_j(\tau) - D_j(\tau) \big]\mathrm{d} \tau \right) U^* \\
+& - \left(  \int_{t_j^n}^{t_j^{n+1}} C_j(\tau) \mathrm{d} \tau \right) U^* + \left(  \int_{t_j^n}^{t_j^{n+1}} D_j(\tau) \mathrm{d} \tau \right) U^*\\
 & \le U^*.
 \end{align*}
 

@@ -1,7 +1,7 @@
 \section{Introduction}
 % why hurricane simulations are important
 %Hurricane events are incredibly deadly and costly natural disasters.
-Since 1980, seven out of the ten most costly US climate disasters were hurricanes, with Hurricane Katrina being the most expensive\cite{noaa}. Hurricanes Harvey, Maria, and Irma, which occurred in 2017, are expected to be among the five most costly US natural disasters.
+Since 1980, seven out of the ten most costly US climate disasters were hurricanes, with Hurricane Katrina being the most expensive\cite{NCEI2018}. Hurricanes Harvey, Maria, and Irma, which occurred in 2017, are expected to be among the five most costly US natural disasters.
 The utilization of computational models can provide local officials with high fidelity tools to assist in evacuation efforts and mitigate loss of life and property.
 %why we need HPC
 Due to the highly nonlinear nature of hurricane dynamics and stringent time constraints, high performance computing (HPC) plays a cornerstone role in providing accurate predictions of flooding.
@@ -9,10 +9,10 @@ Because of the importance of fast, efficient models, there is a significant inte
 
 %how computing is changing
 Even as the speed of supercomputers is drastically increasing, the end of Moore's law and the introduction of many-core architectures represent a tectonic shift in the HPC community.
-In particular, the degree of hardware parallelism is increasing at an exponential rate and the cost of data movement and synchronization is increasing faster than the cost of computation~\cite{KoggeCiSE2014}.
+In particular, the degree of hardware parallelism is increasing at an exponential rate and the cost of data movement and synchronization is increasing faster than the cost of computation~\cite{Kogge2013}.
 % , and hardware is becoming increasingly irregular due to the use of accelerators and susceptibility to failure.
 % In order to achieve good resource utilization on these machines, task-based programming and execution models are being developed to
-As a result, asynchronous task-based programming has been of great interest due to its potential to express increased software parallelism, introduce more flexible load balancing capabilities, and hide the cost of communication through task over-decomposition ~\cite{charm,hpx,legion,ocr,parsec,starpu,uintah,darma}.
+As a result, asynchronous task-based programming has been of great interest due to its potential to express increased software parallelism, introduce more flexible load balancing capabilities, and hide the cost of communication through task over-decomposition ~\cite{charm++,hpx2,legion,ocr,parsec,starpu,uintah,darma}.
 %Examples of major task-based programming and execution models include Charm++, HPX~\cite{hpx}, Legion~\cite{legion}, OCR~\cite{ocr}, PaRSEC~\cite{parsec}, StarPU~\cite{starpu}, etc.
 %There are also domain-specific task-based programming systems, such as the Uintah AMR Framework~\cite{uintah}, and task-based portability layers such as DARMA~\cite{darma}.
 % Additionally, task-based execution may help address issues such as hardware fault tolerance.
