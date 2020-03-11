@@ -8,6 +8,8 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{cite}
+\usepackage{hyperref}
 
 \usetikzlibrary{automata, positioning, arrows}
 
@@ -31,5 +33,15 @@
 \newcommand{\update}{\mathcal{U}}
 \newcommand{\pushflux}{\mathcal{PF}}
 \newcommand{\nsbmsh}{n_{\text{sbmsh}}}
+
+\newcommand{\ip}[2]{\langle #1 , #2\rangle}
+\newcommand{\ipelt}[2]{\langle #1 , #2 \rangle_{\Omega^h_e}}
+\newcommand{\ipedg}[2]{\langle #1 , #2 \rangle_{\partial \Omega^h_e}}
+\newcommand{\Wh}{\mathcal{W}^h}
+\newcommand{\coeffU}{\tilde{\vec{U}}}
+\newcommand{\diff}{\,\mathrm{d}}
+\renewcommand{\vec}[1]{{\bf #1}}
+\newcommand{\mat}{\begin{pmatrix}}
+\newcommand{\rix}{\end{pmatrix}}
 
 \newcommand{\pkg}[1]{\textsc{#1}}

@@ -1,0 +1,85 @@
+\section{Storm Surge Modeling}
+The motivating application for this work is the numerical simulation of large-scale coastal ocean physics, in particular, the modeling of hurricane storm surges.  One of the leading simulation codes in this area is the Advanced Circulation (ADCIRC) model, developed by a large collaborative team including some of the co-authors \cite{ADCIRC2017,Westerink2008,Bunya2010,Dietrich2010,Dietrich2011a,Dietrich2011b,Hope2016,Hope2013}.  ADCIRC is a Galerkin finite element based model that uses continuous, piecewise linear basis functions defined on unstructured triangular meshes.  The model has been parallelized using MPI and has been shown to scale well to a few thousand processors for large-scale problems \cite{Tanaka2011}.   While ADCIRC is now an operational model within the National Oceanographic and Atmospheric Administration's Hurricane Surge On-Demand Forecast System (HSOFS),  its performance on future computational architectures is dependent on potentially restructuring the algorithms and software used within the model.  Furthermore, ADCIRC provides a low-order approximation and does not have special stabilization for advection-dominated flows, thus requiring a substantial amount of mesh resolution.  Extending it to higher-order or substantially modifying the algorithms within the current structure of the code is a challenging task.
+
+With this in mind, our group has also been investigating the use of discontinuous Galerkin (DG) methods for the shallow water equations \cite{Kubatko2006,Kubatko2009a,Kubatko2007,Bunya2009,Wirasaet2014,Wirasaet2015,Michoski2017,Michoski2015,Michoski2013,Michoski2011}, focusing on the Runge-Kutta DG method as described in \cite{Cockburn1989a}.  We have shown that this model can also be applied to  hurricane storm surge \cite{Dawson2011}.  DG methods have potential advantages over the standard continuous Galerkin methods used in ADCIRC, including local mass conservation, ability to dynamically adapt the solution in both spatial resolution and polynomial order ($hp$-adaptivity), and potential for more efficient distributed memory parallelism \cite{Kubatko2009b}.  While DG methods for the shallow water equations have not yet achieved widespread operational use, recent results have shown that for solving a physically realistic coastal application at comparable accuracies, the DG model outperformed ADCIRC in terms of efficiency by a speed-up of 2.3 and when omitting eddy viscosity, a speed-up of 3.9~\cite{Brus2017}.
+
+The prediction of hurricane storm surge involves solving physics-based models that determine the effect of wind stresses pushing water onto land and the restorative effects of gravity and bottom friction. These flows typically occur in regimes where the shallow water approximation is valid \cite{Dutykh2016,Michoski2013}   . Taking the hydrostatic and Boussinesq approximations, the governing equations can be written as
+%\Kazbek{colon after "as"}
+\begin{align*}
+\partial_t \zeta + \nabla \cdot \mathbf{q} &= 0,\\
+\partial_t q_x + \nabla \cdot ( \mathbf{u}q_x) + \partial_x g(\zeta^2/2 + \zeta b) &= g \zeta \partial_x b + S_1,\\
+\partial_t q_y + \nabla \cdot ( \mathbf{u}q_y) + \partial_y g( \zeta^2/2 + \zeta b) &= g \zeta \partial_y b + S_2,
+\end{align*}
+where:
+\begin{itemize}
+\item $\zeta$ is the water surface height above the mean geoid,
+\item $b$ is the bathymetry of the sea floor with the convention that downwards from the mean geoid is positive,
+\item $H = \zeta + b$ is the water column height,
+\item $\vec{u} =\left[ u \, , \, v\right]^T$ is the depth-averaged velocity of the water,
+\item $\vec{q} = H \vec{u} = \left[ q_x \, , \, q_y \right]^T$ is the velocity integrated over the water column height.
+\end{itemize}
+Additionally, $g$ is the acceleration due to gravity, and $S_1$ and $S_2$ are source terms that introduce additional forcing associated with relevant physical phenomena, e.g. bottom friction, Coriolis forces, wind stresses, etc. %\Craig{Still think not posting units is a mistake)}
+
+\section{The Discontinuous Galerkin Finite Element Method}
+
+The discontinuous Galerkin (DG) kernel originally proposed by Reed and Hill~\cite{Reed73} has achieved widespread popularity due to its stability and high-order convergence properties. For an overview on the method, we refer the reader to~\cite{Cockburn01,Hesthaven08} and references therein. For brevity, we forgo  rigorous derivation of the algorithm, but rather aim to provide the salient features of the algorithm to facilitate discussion of the parallelization strategies.
+
+We can rewrite the shallow water equations in conservation form
+\begin{equation}
+\partial_t \mathfrak{U} + \nabla \cdot\vec{F}(t,\vec{x}, \mathfrak{U}) = S(t,\vec{x},\mathfrak{U}),
+\label{eq:conslaw}
+\end{equation}
+where
+\begin{equation*}
+\mathfrak{U} = \mat \zeta \\ q_x \\ q_y \rix, \quad \vec{F} = \mat q_x && q_y \\ u^2H + g(\zeta^2/2 + \zeta b) && uv H \\
+uv H && v^2 H + g ( \zeta^2 /2 + \zeta b) \rix.
+\end{equation*}
+
+Let $\Omega$ be the domain over which we would like to solve Equation \eqref{eq:conslaw}, and consider a mesh discretization $\Omega^h = \cup_e^{n_{el}} \Omega_e^h$ of the domain $\Omega$, where $n_{el}$ denotes the number of elements in the mesh.
+
+We define the discretized solution space, $\Wh$ as the set of functions such that for each state variable the restriction to any element $\Omega_e^h$ is a polynomial of degree $p$.  Note that we enforce no continuity between element boundaries, which is the key feature enabling high-order convergence in discontinuous Galerkin methods.  Let $\ip{f}{g}_{\Gamma} = \int_{\Gamma} fg \diff x$ denote the $L^2$ inner product over a set $\Gamma$. The discontinuous Galerkin formulation then approximates the solution by projecting $\mathfrak{U}$ onto $\Wh$ and enforcing Equation \eqref{eq:conslaw} in the weak sense over $\Wh$, i.e.
+\begin{equation*}
+\ip{ \partial_t \vec{U} + \nabla \cdot F(t,\vec{x},\vec{U}) - S(t,\vec{x}, \vec{U})}{\vec{w}}_{\Omega^h} = 0
+\end{equation*}
+for all $\vec{w} \in \Wh$, where $\vec{U} \in \Wh$ denotes the projected solution.  %\Craig{I find this description a bit needlessly abstruse. Can you make it a bit more accessible, particularly to people who aren't FEM specialists?}
+%\Max{Define $\vec{U}$ as the numerical solution.}
+Since the indicator functions over each element are members of $\Wh$, it suffices to satisfy the weak formulation element-wise.
+The discontinuous Galerkin method can be alternatively formulated as
+\begin{equation}
+\partial_t \ipelt{\vec{U}}{\vec{w}} = \ipelt{\vec{F}}{\nabla\vec{w}} - \ipedg{\widehat{\vec{F}\cdot \vec{n}}}{\vec{w}} + \ipelt{\vec{S}}{\vec{w}}
+\label{eq:dg}
+\end{equation}
+for all $\vec{w} \in \bigoplus_{d=1}^3 \mathcal{P}^p(\Omega_e^h)$ and for all $e = 1, \ldots, n_{el}$, where $\mathcal{P}^p(\Omega_e^h)$ is the space of polynomials of degree $p$ over $\Omega_e^h$. Due to the discontinuities between elements in both trial and test spaces, particular attention must be given to the boundary integral term, which is not well-defined even in a distributional sense. For evaluation, the boundary integral's integrand is replaced with a numerical flux $\widehat{\vec{F} \cdot \vec{n}}(\vec{U}^{int}, \vec{U}^{ext}) \vec{w}^{int}$. To parse this term, let $\vec{U}^{int}$ and $\vec{w}^{int}$ denote the value of $\vec{U}$ and $\vec{w}$ at the boundary taking the limit from the interior of $\Omega^h_e$, and let $\vec{U}^{ext}$ denote the value of $\vec{U}$ at the boundary by taking the limit from the interior of the neighboring element. For elements along the boundary of the mesh, the boundary conditions are enforced by setting $\vec{U}^{ext}$ to the prescribed values. For the numerical flux, $\widehat{\vec{F}\cdot\vec{n}}$, we use the local Lax-Friedrichs flux, 
+\begin{equation*}
+\widehat{\vec{F} \cdot \vec{n}}(\vec{U}^{int}, \vec{U}^{ext}) = \frac{1}{2} \left( \mathbf{F}(\vec{U}^{int}) + \mathbf{F}(\vec{U}^{ext}) + |\Lambda| (\vec{U}^{ext} - \vec{U}^{int}) \right) \cdot \mathbf{n},
+\end{equation*}
+where $\mathbf{n}$ is the unit normal pointing from $\Omega^h_e$ outward, and $|\Lambda|$ denotes the magnitude of the largest eigenvalue of $\nabla_u \mathbf{F} \cdot \vec{n}$ at $\vec{U}^{int}$ or $\vec{U}^{ext}$.
+
+In order to convey more clearly the implementation of such a kernel in practice, consider the element $\Omega_e^h$. For simplicity of notation for the remainder of the subsection we drop all element-related subscripts, $e$. Over this element, we can represent our solution using a basis, $\{ \varphi_i\}_{i=1}^{n_{dof}}$. Then we can let our solution be represented as
+\begin{equation*}
+\vec{U}(t,x) = \sum_{i=1}^{n_{dof}} \coeffU_i(t) \varphi_i(x),
+\end{equation*}
+where $\coeffU$ are the basis-dependent coefficients describing $\vec{U}$.
+Following the notation of Warbuton~\cite{Gandham2015}, it is possible to break down Equation \eqref{eq:dg} into a set of kernels as 
+\begin{equation}
+\partial_t \coeffU_i = \sum_{j=1}^{n_{dof}} \mathcal{M}_{ij}^{-1}\left( \underbrace{\ipelt{\vec{F}}{\nabla\varphi_j}}_{\mathcal{V}_{j}}  + \underbrace{\ipelt{\vec{S}}{\varphi_j}}_{\mathcal{S}_{j}} - \underbrace{\ipedg{\widehat{\vec{F}\cdot \vec{n}}}{\varphi_j}}_{\mathcal{I}_{j}} \right),
+\end{equation}
+where $\mathcal{M}_{ij} = \ipelt{\varphi_i}{\varphi_j}$ denotes the local mass matrix.
+Here we define the following kernels:
+\begin{itemize}
+\item $\mathcal{V}$: The volume kernel,
+\item $\mathcal{S}$: The source kernel,
+\item $\mathcal{I}$: The interface kernel.
+\end{itemize}
+To discretize in time, we use the strong stability preserving Runge-Kutta methods~\cite{Gottlieb2001}. Letting 
+\begin{equation*}
+\mathcal{L}^h \left(\coeffU \right) = \mathcal{M}^{-1}\left( \mathcal{V}\left(\coeffU\right) + \mathcal{S}\left(\coeffU\right) - \mathcal{I}\left(\coeffU\right) \right),
+\end{equation*}
+we can define the timestepping method, for computing the $i$-th stage as
+\begin{equation*}
+\coeffU^{(i)} = \sum_{k=0}^{i-1} \alpha_{ik} \coeffU^{(k)} + \beta_{ik} \Delta t \mathcal{L}^h\left(\coeffU^{(k)}\right),
+\end{equation*}
+where $\coeffU^{(k)}$ denotes the basis coefficients at the $k$-th Runge-Kutta stage.
+We denote the operator, which maps $\left\{\coeffU^{(k)},\,\mathcal{V}\left(\coeffU^{(k)}\right),\,\mathcal{S}\left(\coeffU^{(k)}\right),\,\mathcal{I}\left(\coeffU^{(k)}\right)\right\}_{k=0}^{i-1}$ to $\coeffU^{(i)}$ as the update kernel, $\mathcal{U}$.
+
+Solutions to hyperbolic conservation laws may give rise to discontinuous solutions. In these regions, the underlying approximation theory breaks down and the DG algorithm gives rise to spurious oscillations, which if left untreated give rise to spurious oscillations. These oscillations are treated in a post processing phase known as {\em slope-limiting}. Techniques roughly are categorized as limiting based on neighboring information \cite{Cockburn1989b,Kuzmin2010,Bell1988}, reducing high frequency modes via filtering \cite{Hesthaven08,Maday1993,Meister2011}, adding viscosity to smear out sharp gradients \cite{Guermond2011,Persson2006}, or projection to lower orders \cite{Dumbser2016}. For an in-depth comparison of various slope limiting approaches, we refer the reader to~\cite{Michoski2015}. For the shallow water equations, an additional instability occurs for small water column heights. The numerics may give rise to regions of negative water column height causing the shallow water equations to become meaningless both physically and mathematically. To address this, numerous approaches have been proposed~\cite{Bunya2009,Gandham2015,Casulli2009,Vater2015,Xing2013,Rannabauer2018}.

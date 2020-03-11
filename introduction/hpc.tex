@@ -1,0 +1,37 @@
+Even as the speed of supercomputers is drastically increasing, the end of Moore's law and the introduction of many-core architectures represent a tectonic shift in the HPC community.
+In particular, the degree of hardware parallelism is increasing at an exponential rate and the cost of data movement and synchronization is increasing faster than the cost of computation~\cite{Kogge2013}.
+% , and hardware is becoming increasingly irregular due to the use of accelerators and susceptibility to failure.
+% In order to achieve good resource utilization on these machines, task-based programming and execution models are being developed to
+As a result, asynchronous task-based programming has been of great interest due to its potential to express increased software parallelism, introduce more flexible load balancing capabilities, and hide the cost of communication through task over-decomposition.
+Examples of major task-based programming and execution models include Charm++~\cite{charm++}, HPX~\cite{hpx2}, Legion~\cite{legion}, OCR~\cite{ocr}, PaRSEC~\cite{parsec}, StarPU~\cite{starpu}, etc.
+There are also domain-specific task-based programming systems, such as the Uintah AMR Framework~\cite{uintah}, and task-based portability layers such as DARMA~\cite{darma}.
+% Additionally, task-based execution may help address issues such as hardware fault tolerance.
+These programming models decouple the specification of the algorithm from the task scheduling mechanism, which determines where and when each task may execute and orchestrates the movement of required data between the tasks.
+Furthermore, lightweight, one-sided messaging protocols that support active messages have the potential to reduce the overheads associated with inter-process communication and synchronization, which will become even more important as parallelism increases.
+
+\subsubsection{Active Global Address Space}
+
+The most relvant abstraction with respects to load balancing is the active global address space (AGAS). As we intend to implement dynamic load balancing using an HPX framework, we describe the AGAS here.
+While the threading subsystem operates within a single private address space, HPX extends its programming model to distributed runs via an \emph{active global address space}. Global address spaces attempt to emulate the ease of programming on a single node, while still maintaining tight control over data locality necessary for writing a performant distributed code. Two well-known global address space models are UPC~\cite{upc} and Co-Array Fortran~\cite{coarray}. While global address space models like UPC's partitioned global address space (PGAS) are more data-centric, e.g. by exposing pointers to memory addresses on different nodes, HPX approaches global address spaces in a more object-oriented manner.
+
+AGAS consists of a collection of private address spaces, called \emph{localities}. Each locality will run its own instance of the threading subsystem, scheduling threads with locally available resources. In practice, localities are typically chosen to be  nodes or NUMA domains. The basic addressable unit in AGAS is the \emph{component}. Components encapsulate the objects the user would like to remotely access. To interact with a component, the user must go through a smart-pointer-like wrapper class called a \emph{client}. The client can not only manage the component's lifetime via the RAII idiom, but also exposes remotely invokable member functions. Clients can either reside on the same or different locality as their associated component. When a remote locality executes a client member function, HPX will send an active message to the locality where the component is located, execute the function there, and return the result to the client. By interfacing with components through clients, AGAS provides equivalent local and distributed semantics, simplifying the programming of distributed applications.
+
+The key difference between AGAS and other global address space models is its native support for component \emph{migration}. HPX's AGAS layer allows the developer to relocate components to different localities during runtime. With all component functions being invoked through the client interface, HPX is able to ensure that the component functions invoked through the client will be executed on the correct localities, guaranteeing the application's correctness. This functionality can be used to accelerate applications via dynamic load balancing. However, since component migration potentially requires sending large quantities of data through the interconnect, and the load profile is application dependent, HPX requires the application to manage component relocation.
+
+AGAS decouples the correctness of the application from the data distribution across nodes.  This abstraction provides a means of ensuring load balance across nodes without imposing unreasonable burdens on the application to guarantee correctness.
+
+\subsubsection{Dynamic Load Balancing}
+One of the key aspects of DGSWEM is its ability to simulate coastal inundation during hurricane landfall.
+The DG kernel can be implemented in a manner such that dry regions of the simulation require no computational work; however, as the hurricane inundates the coast, this optimization introduces significant dynamic load imbalance.
+In order to address the load imbalance while still fitting the problem in machine memory, two constraints (load and memory) must be accounted for simultaneously.
+
+While multi-constraint graph partitioning tools have been used to obtain good static partitions for these scenarios, they perform sub-optimally for irregular applications such as ours.
+
+In adaptive mesh refinement (AMR) codes and $hp$-adaptive finite elements, block-structured grids are commonly used, which allow for efficient representations of data locality using space filling curves. These space filling curves allow for dynamic load balancing techniques, known as geometric partitioning and outlined in \cite{Devine2005,Burstedde2011,Blaise2012,Ferreira2017}. However, for our purposes block-structured grids have difficulties modeling complex coastal geometries. As such, DGSWEM utilizes unstructured grids. Dynamic load balancing for these grids typically relies on two approaches: (1) graph partitioning algorithms, such as those provided in the METIS and SCOTCH libraries \cite{scotch,Bhatele2012,Karypis1998,Devine2005,Aykanat2007}, and (2) diffusion or refinement based approaches \cite{Schloegel1997}.
+The simulation of coastal inundation introduces irregularity, which decouples the memory and load balancing constraints.
+%, i.e. balancing elements across processors is not sufficient
+To the authors' knowledge, the only paper that uses dynamic load balancing to address this issue is \cite{Asuncion2016}. However, their approach only balances load on structured grids, which may result in memory overflow.
+Local timestepping methods introduce similar irregularity.
+Seny et al. have proposed a static load balancing scheme using multi-constraint partitioning in \cite{Seny2014}.
+However, they note the dynamic load balancing problem as an open one.
+Some examples of load balancing algorithm evaluations in the context of task-based execution models include the use of cellular automata \cite{Hosoori2011}, hierarchical partitioning \cite{Zheng2010}, and gossip protocols \cite{Menon2013}.

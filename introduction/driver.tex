@@ -1,0 +1,43 @@
+\chapter{Introduction}% 1 page overview
+
+% why hurricane simulations are important
+%Hurricane events are incredibly deadly and costly natural disasters.
+Since 1980, seven out of the ten most costly US climate disasters were hurricanes, with Hurricane Katrina being the most expensive\cite{NCEI2018}. Hurricanes Harvey, Maria, and Irma, which occurred in 2017, are expected to be among the five most costly US natural disasters.
+The utilization of computational models can provide local officials with high fidelity tools to assist in evacuation efforts and mitigate loss of life and property.
+%why we need HPC
+Due to the highly nonlinear nature of hurricane dynamics and stringent time constraints, high performance computing (HPC) plays a cornerstone role in providing accurate predictions of flooding.
+Because of the importance of fast, efficient models, there is a significant interest in improving the speed and quality of these computational tools.
+
+%how computing is changing
+Even as the speed of supercomputers is drastically increasing, the end of Moore's law and the introduction of many-core architectures represent a tectonic shift in the HPC community.
+In particular, the degree of hardware parallelism is increasing at an exponential rate and the cost of data movement and synchronization is increasing faster than the cost of computation, and hardware is becoming increasingly irregular due to the use of accelerators and susceptibility to failure~\cite{Kogge2013}.
+In order to achieve good resource utilization on these machines, task-based programming and execution models are being developed to express increased software parallelism, introduce more flexible load balancing capabilities, and hide the cost of communication through task over-decomposition. 
+Examples of major task-based programming and execution models include Charm++, HPX~\cite{hpx2}, Legion~\cite{legion}, OCR~\cite{ocr}, PaRSEC~\cite{parsec}, StarPU~\cite{starpu}, etc.
+There are also domain-specific task-based programming systems, such as the Uintah AMR Framework~\cite{uintah}, and task-based portability layers such as DARMA~\cite{darma}.
+% Additionally, task-based execution may help address issues such as hardware fault tolerance.
+These programming models decouple the specification of the algorithm from the task scheduling mechanism, which determines where and when each task may execute and orchestrates the movement of required data between the tasks.
+Furthermore, lightweight, one-sided messaging protocols that support active messages have the potential to reduce the overheads associated with inter-process communication and synchronization, which will become even more important as parallelism increases.
+%However, transitioning scientific applications from their current synchronous implementations to asynchronous, task-based programming models requires a significant software engineering effort.
+%Additionally, load balancing the execution of the resulting task graph remains a challenge due to the underlying computational hardness of optimal task scheduling.
+% Often, load balancers must utilize application-specific information to obtain a reasonable schedule.
+
+The aim of this thesis is to explore the co-design of algorithms for hurricane storm surge with task-based runtime systems. While simply porting algorithms will certainly allow us to mitigate the impact of hardware irregularity, we hafve found that in practice this gives at best a marginal improvement over existing optimized MPI implementations. 
+
+In~\cite{Bremer2019}, we found that HPX---one such runtime---gives a speed-up of 1.2 over an MPI implementation on 128 Knights Landing nodes. Results suggest that the speed-up was mainly attributed to page faults for the MPI implementation, rather than avoiding message latencies or MPI overhead. In fact, we suspect that this gap could largely be closed through use of a better memory allocator for the MPI implementation. 
+
+%Furthermore, the HPX version is able to strong scale substantially less well than MPI version. Extrapolating results from \cite{Bremer2019}, a 4 day forecast using a DG method would require 17.5 hours at the strong scaling limit.  The required minimum task sizes for good runtime efficiency (i.e. fraction of time spent in the application versus the runtime) puts the HPX implementation well outside of the scalability regime needed for real-time forecasting of storm surge.
+
+The test case used in~\cite{Bremer2019} ultimately lacks irregularity. The communication profile of the code reduces to a stencil code on an unstructured mesh, which can be implemented efficiently using non-blocking point to point MPI messages. What is needed to generate a value proposal for using task-based runtime systems are sources of irregularity. This thesis is split into two main chapters, identifying and assessing the impact of two such ideas:
+\begin{enumerate}
+\item {\em Chapter \ref{ch:lb}}: An essential part to the simulation of hurricane storm surge is the simulation of coastal flooding. One existing source of irregularity is the classification of cells as either wet or dry. Wet cells require the full set of physics to be solved, while dry cells are able to trivially update. In this chapter, we explore the impact of dynamic load balancing strategies to address the load imbalance generated as a hurricane makes land fall.
+\item {\em Chapter \ref{ch:lts}}: The timestep taken by these simulations is restricted by the Courant-Friedrichs-Lewy (CFL) condition. The CFL condition forms the basis of the stability results which have led to the popularity of finite volume and DG methods. However, this condition is ultimately a condition that can be enforced locally, and in light of significant variations in mesh size and advection speeds, local CFL enforcement can lead to dramatic reduction in work. This chapter develops a timestepping method that locally enforces the CFL and recovers the same stability results for the local timestepping case.
+\end{enumerate}
+
+
+\input{introduction/surge}
+
+\section{Exascale Computing--Novel Programming Models} % 3 pages HPC/DLB
+\input{introduction/hpc}
+
+%\subsection{Local Timestepping} % 5 pages Local Timestepping
+%\input{introduction/local_timestepping}
