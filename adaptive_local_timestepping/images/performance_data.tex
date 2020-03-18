@@ -1,0 +1,15 @@
+%This file is generated as part of a script. Instead of directly editing it
+%please make the appropriate changes in images/src/raw_performance_data.py
+
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|} \hline
+Problem & Mesh & Runtime & $\bar{T}$ & $\sigma_T/\bar{T}$ & $\#$ of Updates & $\#$ of Rollbacks\\\hline
+Lake at Rest & Uniform & Devastator (no CFL) &  139.4 & 0.8\% & $252.5\cdot 10^9$ & 0 \\\hline
+Lake at Rest & Uniform & Devastator &  173.2 & 0.8\% & $252.5\cdot 10^9$ & 0 \\\hline
+Lake at Rest & Uniform & MPI &  133.2 & 0.1\% & $252.5\cdot 10^9$ & -- \\\hline
+Lake at Rest & Polynomial & Devastator &  192.6 & 3.3\% & $239.7\cdot 10^9$ & $  3.5\cdot 10^9$ \\\hline
+Lake at Rest & Polynomial & MPI &  478.4 & 2.0\% & $892.2\cdot 10^9$ & -- \\\hline
+Carrier-Greenspan & Uniform & Devastator &  729.4 & 1.1\% & $856.2\cdot 10^9$ & $ 12.0\cdot 10^9$ \\\hline
+Carrier-Greenspan & Uniform & MPI &  995.7 & 0.7\% & $1674.5\cdot 10^9$ & -- \\\hline
+Carrier-Greenspan & Polynomial & Devastator & 3212.4 & 0.5\% & $3209.6\cdot 10^9$ & $113.3\cdot 10^9$ \\\hline
+Carrier-Greenspan & Polynomial & MPI & 10732.0 & 0.1\% & $18070.1\cdot 10^9$ & -- \\\hline
+\end{tabular}
