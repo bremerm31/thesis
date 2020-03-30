@@ -1,5 +1,5 @@
 % DGSWEM and the load balancing problem
-This paper examines the potential benefits of implementing DGSWEM, a discontinuous Galerkin (DG) finite-element storm surge code, on a task-based asynchronous execution model, and investigates various load balancing strategies for the resulting program.
+This chapter examines the potential benefits of implementing DGSWEM, a discontinuous Galerkin (DG) finite-element storm surge code, on a task-based asynchronous execution model, and investigates various load balancing strategies for the resulting program.
 One of the key aspects of DGSWEM is its ability to simulate coastal inundation during hurricane landfall.
 The DG kernel can be implemented in a manner such that dry regions of the simulation require no computational work; however, as the hurricane inundates the coast, this optimization introduces significant dynamic load imbalance.
 In order to address the load imbalance while still fitting the problem in machine memory, two constraints (load and memory) must be accounted for simultaneously.
@@ -16,7 +16,7 @@ DGSim was designed to natively model lightweight, one-sided, active interprocess
 The development of DGSim allows us to estimate the performance of hurricane simulations running with these advanced features in a variety of configurations.
 % DGSim is additionally able to mimic mechanisms that are common across production frameworks, such as automated task scheduling, load balancing, and data movement.
 Crucially, DGSim allows us to simulate the computational behavior of DGSWEM in an asynchronous task-based runtime using skeletonization, eliminating the need to execute the costly computational kernels, resulting in a lightweight approach that allows for rapid algorithm prototyping and evaluation.
-The main contributions of this paper are:
+The main contributions of this section are:
 \begin{enumerate}
 \item The development of multi-constraint dynamic load balancing strategies specifically geared for the irregularity associated with the simulation of hurricane storm surge. In doing so, we present a dynamic and semi-static algorithm.
 \item The \emph{trellis} approach for semi-static repartitiong strategies which fully leverages the asynchronous nature of the run-time. This approach can be extended to ensure efficient semi-static load balancing for a wide range of problems.
@@ -24,4 +24,4 @@ The main contributions of this paper are:
 \end{enumerate}
 
 %outline of paper
-The outline of the paper is as follows. Section~\ref{sec:related} presents related work.  In Section \ref{sec:dgswem}, we discuss the DG kernel and the irregular nature of the inundation problem. Thereafter, we outline DGSim, which simulates the performance of an asynchronous task-based implementation of DGSWEM. Section \ref{sec:balancers} presents formalism for load balancing in an asynchronous context and outlines a distributed diffusion-based and a semi-static load balancing algorithm. Lastly, in Section \ref{sec:experiments}, we present our model validation and experimental results, demonstrating the viability of these load balancing approaches.
+The outline of the chapter is as follows. Section~\ref{sec:related} presents related work.  In Section \ref{sec:dgswem}, we discuss the DG kernel and the irregular nature of the inundation problem. Thereafter, we outline DGSim, which simulates the performance of an asynchronous task-based implementation of DGSWEM. Section \ref{sec:balancers} presents formalism for load balancing in an asynchronous context and outlines a distributed diffusion-based and a semi-static load balancing algorithm. Lastly, in Section \ref{sec:experiments}, we present our model validation and experimental results, demonstrating the viability of these load balancing approaches.

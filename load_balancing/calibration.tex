@@ -42,7 +42,7 @@ Timing DGSWEM using polynomial order $p=2$ with a modal filter and the wetting a
 %\end{comment}
 
 %\todo{please make sure this edited paragraph is still correct}
-To determine the wet/dry status of elements at each time step, we use a hurricane simulation of a synthetic storm from a FEMA flood insurance test suite throughout this paper. The test problem is a 4 day simulation with a timestep of 0.25 seconds using a 2-stage RK method on a 3.6 million element unstructured mesh.
+To determine the wet/dry status of elements at each time step, we use a hurricane simulation of a synthetic storm from a FEMA flood insurance test suite throughout this chapter. The test problem is a 4 day simulation with a timestep of 0.25 seconds using a 2-stage RK method on a 3.6 million element unstructured mesh.
 Using this benchmark, the wet/dry state of each element is recorded every 1200 time steps in DGSWEM, and the recorded states are then interpolated for intermediate time steps in DGSim.
 
 Due to constraints on the length of simulation, DGSim only computes a 10th of the total timesteps. This conservatively approximates the available work to hide the load balancing costs. The change in wet/dry fraction is scaled in a consistent manner to ensure that the entire hurricane is simulated.
@@ -60,15 +60,15 @@ a compute node is split into separate partitions.
 In such a configuration, the cost of accessing data from the closest
 partition is lower than for distant partitions, thus
 creating non-uniform memory access (NUMA) domains.
-%For example, on the NERSC Edison supercomputer~\cite{edison-config},
-%each node contains two NUMA domains, one for each CPU socket containing
-%12 compute cores.
+For example, on the NERSC Edison supercomputer~\cite{Edison},
+each node contains two NUMA domains, one for each CPU socket containing
+12 compute cores.
 
-%Our execution model instantiates one rank per NUMA domain, each with
-%eleven {\it worker threads} dedicated to executing compute tasks and one
-%{\it communication thread} dedicated to send and receive active messages.
-%We also model messages between nodes, resulting in three message categories:
-%intra-NUMA, inter-NUMA, and inter-node.
+Our execution model instantiates one rank per NUMA domain, each with
+eleven {\it worker threads} dedicated to executing compute tasks and one
+{\it communication thread} dedicated to send and receive active messages.
+We also model messages between nodes, resulting in three message categories:
+intra-NUMA, inter-NUMA, and inter-node.
 Given a message source, destination, and size,
 our simulator's performance model estimates the delivery delay by
 summing per-message (latency/overhead) and per-byte
