@@ -12,7 +12,7 @@ Because of the importance of fast, efficient models, there is a significant inte
 Even as the speed of supercomputers is drastically increasing, the end of Moore's law and the introduction of many-core architectures represent a tectonic shift in the HPC community.
 In particular, the degree of hardware parallelism is increasing at an exponential rate and the cost of data movement and synchronization is increasing faster than the cost of computation, and hardware is becoming increasingly irregular due to the use of accelerators and susceptibility to failure~\cite{Kogge2013}.
 In order to achieve good resource utilization on these machines, task-based programming and execution models are being developed to express increased software parallelism, introduce more flexible load balancing capabilities, and hide the cost of communication through task over-decomposition. 
-Examples of major task-based programming and execution models include Charm++, HPX~\cite{hpx2}, Legion~\cite{legion}, OCR~\cite{ocr}, PaRSEC~\cite{parsec}, StarPU~\cite{starpu}, etc.
+Examples of major task-based programming and execution models include Charm++, HPX~\cite{hpx2}, Legion~\cite{legion}, OCR~\cite{ocr}, PaRSEC~\cite{parsec}, StarPU~\cite{starpu}, Galois~\cite{Kulkarni2007, Pingali2011}.
 There are also domain-specific task-based programming systems, such as the Uintah AMR Framework~\cite{uintah}, and task-based portability layers such as DARMA~\cite{darma}.
 % Additionally, task-based execution may help address issues such as hardware fault tolerance.
 These programming models decouple the specification of the algorithm from the task scheduling mechanism, which determines where and when each task may execute and orchestrates the movement of required data between the tasks.
