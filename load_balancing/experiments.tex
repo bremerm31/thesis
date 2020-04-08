@@ -33,7 +33,7 @@ $\beta$ & 2 & & \\
 }
 \end{table}
 
-To ensure that our simulator is accurate, we compared the DGSim execution times for the Storm36 simulation to a skeletonized version of DGSWEM run on NERSC's Edison.  The skeletonized DGSWEM implements the programming model outlined in Section~\ref{sec:dgsim}. Inter-process communication is achieved through one-sided asynchronous remote procedure calls using UPC++~\cite{Bachan2017}, and tasks are executed using a dataflow execution model with a master-worker thread organization.
+To ensure that our simulator is accurate, we compared the DGSim execution times for the Storm36 synthetic hurricane simulation to a skeletonized version of DGSWEM run on NERSC's Edison.  The skeletonized DGSWEM implements the programming model outlined in Section~\ref{sec:dgsim}. Inter-process communication is achieved through one-sided asynchronous remote procedure calls using UPC++~\cite{Bachan2017}, and tasks are executed using a dataflow execution model with a master-worker thread organization.
 One feature not implemented in the skeletonized DGSWEM is the AGAS layer. However, for the statically balanced problems considered for this validation, AGAS overhead is negligible due to caching of neighbors' ranks.
 By burning identical worker thread execution times, the validation examines whether the messaging and threading overhead models as described in Section~\ref{sec:compute-cost-model} are reasonable.
 %, implemented using the programming model described in Section~\ref{sec:dgsim}. 

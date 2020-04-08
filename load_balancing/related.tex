@@ -1,7 +1,7 @@
 \section{Related Work}
 \label{sec:related}
 
-In adaptive mesh refinement (AMR) codes and $hp$-adaptive finite elements, dynamic load balancing typically relies one of three approaches: (1) graph partitioning using space filling curves, known as geometric partitioning \cite{Devine2005,Burstedde2011,Blaise2012,Ferreira2017} (2) graph partitioning algorithms, such as those provided in the METIS and SCOTCH libraries \cite{Bhatele2012,scotch,Karypis1998,Devine2005,Aykanat2007}, or (3) diffusion or refinement based approaches \cite{Schloegel1997}.
+In adaptive mesh refinement (AMR) codes and $hp$-adaptive finite elements, dynamic load balancing typically relies on one of three approaches: (1) graph partitioning using space filling curves, known as geometric partitioning \cite{Devine2005,Burstedde2011,Blaise2012,Ferreira2017} (2) graph partitioning algorithms, such as those provided in the METIS and SCOTCH libraries \cite{Bhatele2012,scotch,Karypis1998,Devine2005,Aykanat2007}, or (3) diffusion or refinement based approaches \cite{Schloegel1997}.
 The simulation of coastal inundation introduces irregularity, which decouples the memory and load balancing constraints.
 %, i.e. balancing elements across processors is not sufficient
 To the authors' knowledge, the only paper that uses dynamic load balancing to address this issue is \cite{Asuncion2016}. However, their approach only balances load on structured grids, which may result in memory overflow.

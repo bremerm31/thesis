@@ -12,7 +12,7 @@ where
 \label{eq:dgkernel}
 \end{equation}
 The DG method is parallelized by distributing elements across a set of concurrent processes (referred to as {\em ranks}) that cooperate by message passing.
-In \eqref{eq:dgkernel}, the update, volume, and source kernels can be computed entirely locally (independent of other elements).
+In \eqref{eq:dgkernel}, the volume $\mathcal{V}$, and source $\mathcal{S}$ kernels can be computed entirely locally (independent of other elements).
 The interface kernel is the only portion of the DG algorithm that may require non-local information, so elements not on the same rank must communicate over the network.
 With explicit timestepping, these equations can be thought of as a stencil code over an irregular graph.
 %In comparison, implicit timestepping methods require a global barrier, requiring significantly more network traffic as well as reducing the amount of work that can be completed locally.
@@ -31,7 +31,7 @@ With explicit timestepping, these equations can be thought of as a stencil code 
 
 % \subsection{Source of irregularity}
 One of the key aspects of a storm surge code is its ability to simulate inundation.
-Due to numerical artifacts, regions of negative water column height may occur throughout the simulation, rendering the shallow water equations meaningless, both mathematically and physically.
+Due to the numerical discretization, regions of negative water column height may occur throughout the simulation, rendering the shallow water equations meaningless, both mathematically and physically.
 To remedy this, an additional slopelimiter is applied after the update kernel.
 We use the limiter proposed in \cite{Bunya2009}, which locally examines elements after each update and fixes problematic regions.
 One of the key features of this algorithm is its ability to classify elements as either wet or dry.
