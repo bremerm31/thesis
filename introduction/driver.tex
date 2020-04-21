@@ -2,7 +2,7 @@
 
 % why hurricane simulations are important
 %Hurricane events are incredibly deadly and costly natural disasters.
-Since 1980, seven out of the ten most costly US climate disasters were hurricanes, with Hurricane Katrina being the most expensive\cite{NCEI2018}, and Hurricanes Harvey, Maria, and Irma, which occurred in 2017, are among the five most costly US natural disasters.
+Since 1980, seven out of the ten most costly US climate disasters were hurricanes, with Hurricane Katrina being the most expensive\cite{NCEI2018}, and Hurricanes Harvey, Maria, and Irma, which occurred in 2017, among the five most costly US natural disasters.
 The utilization of computational models can provide local officials with high fidelity tools to assist in evacuation efforts and mitigate loss of life and property.
 %why we need HPC
 Due to the highly nonlinear nature of hurricane dynamics and stringent time constraints, high performance computing (HPC) plays a cornerstone role in providing accurate predictions of flooding.
@@ -10,7 +10,7 @@ Because of the importance of fast, efficient models, there is a significant inte
 
 %how computing is changing
 Even as the speed of supercomputers is drastically increasing, the end of Moore's law and the introduction of many-core architectures represent a tectonic shift in the HPC community.
-In particular, the degree of hardware parallelism is increasing at an exponential rate and the cost of data movement and synchronization is increasing faster than the cost of computation, and hardware is becoming increasingly irregular due to the use of accelerators and susceptibility to failure~\cite{Kogge2013}.
+In particular, the degree of hardware parallelism is increasing at an exponential rate and the cost of data movement and synchronization is increasing faster than the cost of computation. Additionally, hardware is becoming increasingly irregular due to the use of accelerators and susceptibility to failure~\cite{Kogge2013}.
 In order to achieve good resource utilization on these machines, task-based programming and execution models are being developed to express increased software parallelism, introduce more flexible load balancing capabilities, and hide the cost of communication through task over-decomposition. 
 Examples of major task-based programming and execution models include Charm++, HPX~\cite{hpx2}, Legion~\cite{legion}, OCR~\cite{ocr}, PaRSEC~\cite{parsec}, StarPU~\cite{starpu}, Galois~\cite{Kulkarni2007, Pingali2011}.
 There are also domain-specific task-based programming systems, such as the Uintah AMR Framework~\cite{uintah}, and task-based portability layers such as DARMA~\cite{darma}.
@@ -21,7 +21,7 @@ Furthermore, lightweight, one-sided messaging protocols that support active mess
 %Additionally, load balancing the execution of the resulting task graph remains a challenge due to the underlying computational hardness of optimal task scheduling.
 % Often, load balancers must utilize application-specific information to obtain a reasonable schedule.
 
-The aim of this thesis is to identify means to improve the performance of the simulation of hurricane storm surge by using task-based runtimes. We accomplish this by identifying and introducing adaptivity into the simulation. These improvements historically suffer from complex implementations that are difficult to optimize using traditional programming models. Through proper mapping of the algorithm onto the runtime, these performance gains are realized and the complexity of the implementation is managed by the runtime system.
+The aim of this thesis is to identify means to improve the performance of the simulation of hurricane storm surge by using task-based runtimes. We accomplish this by identifying and introducing adaptivity into the simulation. These improvements historically suffer from complex implementations that are difficult to optimize using traditional programming models. Through proper mapping of the algorithms onto a task-based runtime, these performance gains are realized and the complexity of the implementation is managed by the runtime system.
 
 \input{introduction/surge}
 
