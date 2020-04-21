@@ -180,7 +180,7 @@ By Lemma~\ref{lem1},
 \Delta U_j (\ssyncnext ) &= \frac{1}{\Delta \ssync} \int_{\ssync}^{\ssyncnext} 
 \Delta \left( U_j(\tau) +  (\lceil \tau \rceil_j - \ssync ) \left( C_j \Delta U_{j-1}(\tau) + D_j \Delta U_j(\tau) \right) \right)\,\mathrm{d} \tau\\
 &= \frac{1}{\Delta \ssync} \int_{\ssync}^{\ssyncnext} \Big( 1 + ( \lceil \tau \rceil_{j+1} - \ssync ) C_{j+1}(\tau) - ( \lceil \tau \rceil_j - \ssync ) D_{j}(\tau) \Big) \Delta U_j(\tau) \,\mathrm{d} \tau\\
-&\quad + \frac{1}{\Delta \ssync} \int_{\ssync}^{\ssyncnext} D_{j+1} \Delta U_{j+1}(\tau) - C_j \Delta U_{j-1} (\tau) \,\mathrm{d} \tau.
+&\quad + \frac{1}{\Delta \ssync} \int_{\ssync}^{\ssyncnext} ( \lceil \tau \rceil_{j+1} - \ssync ) D_{j+1} \Delta U_{j+1}(\tau) - ( \lceil \tau \rceil_j - \ssync )  C_j \Delta U_{j-1} (\tau) \,\mathrm{d} \tau.
 \end{align*}
 Taking the absolute value of both sides, and using the CFL condition and $C_j \le 0 \le D_j$ for all $j$ and $\tau$, we obtain
 \begin{multline}  \label{eq:thm1-pfa}
