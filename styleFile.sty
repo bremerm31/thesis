@@ -84,6 +84,21 @@
 \titleformat*{\subsection}{\normalsize\bfseries}
 
 %%%%%%%%%%%%%% Dissertation style packages %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%       Copyright Page
+%
+\def\copyrightpage{\thispagestyle{empty}
+    \vspace*{\fill}
+    \centerline{Copyright}
+    \vspace*{5pt}
+    \centerline{by}
+    \vspace*{5pt}
+    \centerline{\@author}
+    \vspace*{5pt}
+    \centerline{\theyear{}}
+    \vfill\clearpage}
+
+
 
 %%%%%%%%%%%%%%%%% Document-specific definitions %%%%%%%%%%%%%%%%%%%%%%
 \theoremstyle{definition}
