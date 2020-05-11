@@ -222,7 +222,7 @@ keywords = "DES for subsurface flows"
 %Other space-time paper
 @article{Loercher2007,
 author="L{\"o}rcher, F. and Gassner, G. and Munz, C.-D.",
-title="A Discontinuous {G}alerkin Scheme Based on a Space--Time Expansion. {I.} {I}nviscid Compressible Flow in One Space Dimension",
+title="A Discontinuous {Galerkin} Scheme Based on a Space--Time Expansion. {I.} {I}nviscid Compressible Flow in One Space Dimension",
 journal="Journal of Scientific Computing",
 year="2007",
 month="Aug",
@@ -249,7 +249,7 @@ comment = "DES type timestepping for DG-ADER -- no preemption"
 
 @article{Taube2009,
 author = {Taube, Arne and Dumbser, Michael and Munz, Claus‐Dieter and Schneider, Rudolf},
-title = {A high‐order discontinuous {G}alerkin method with time‐accurate local time stepping for the {M}axwell equations},
+title = {A high‐order discontinuous {Galerkin} method with time‐accurate local time stepping for the {Maxwell} equations},
 journal = {International Journal of Numerical Modelling: Electronic Networks, Devices and Fields},
 volume = {22},
 number = {1},
@@ -258,8 +258,9 @@ pages = {77-103}
 }
 
 @INPROCEEDINGS{Breuer2016,
-author={A. Breuer and A. Heinecke and M. Bader},
-booktitle={2016 IEEE International Parallel and Distributed Processing Symposium (IPDPS)},
+author={Alexander Breuer and Alexander Heinecke and Michael Bader},
+booktitle={International Parallel and Distributed Processing Symposium},
+series={IPDPS '16},
 title={Petascale Local Time Stepping for the {ADER-DG} Finite Element Method},
 year={2016},
 pages={854-863},
@@ -269,7 +270,7 @@ comment = "First serious LTS paper runs up to 86,000 cores for seismic applicati
 
 @inproceedings{Uphoff2017,
  author = {Uphoff, Carsten and Rettenberger, Sebastian and Bader, Michael and Madden, Elizabeth H. and Ulrich, Thomas and Wollherr, Stephanie and Gabriel, Alice-Agnes},
- title = {Extreme Scale Multi-physics Simulations of the Tsunamigenic 2004 {S}umatra Megathrust Earthquake},
+ title = {Extreme Scale Multi-physics Simulations of the Tsunamigenic 2004 {Sumatra} Megathrust Earthquake},
  booktitle = {Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis},
  series = {SC '17},
  year = {2017},
@@ -284,7 +285,7 @@ comment = "First serious LTS paper runs up to 86,000 cores for seismic applicati
 %Bruno Seny papers
 @article{Seny2012,
 author = {Seny, B. and Lambrechts, J. and Comblen, R. and Legat, V. and Remacle, J.‐F.},
-title = {Multirate time stepping for accelerating explicit discontinuous {G}alerkin computations with application to geophysical flows},
+title = {Multirate time stepping for accelerating explicit discontinuous {Galerkin} computations with application to geophysical flows},
 journal = {International Journal for Numerical Methods in Fluids},
 volume = {71},
 number = {1},
@@ -295,7 +296,7 @@ month = {January}
 
 @article{Seny2014,
  author = {Seny, Bruno and Lambrechts, Jonathan and Toulorge, Thomas and Legat, Vincent and Remacle, Jean-Fran\c{c}ois},
- title = {An Efficient Parallel Implementation of Explicit Multirate {R}unge-{K}utta Schemes for Discontinuous {G}alerkin Computations},
+ title = {An Efficient Parallel Implementation of Explicit Multirate {Runge}-{Kutta} Schemes for Discontinuous {Galerkin} Computations},
  journal = {Journal of Computational Physics},
  volume = {256},
  number = "1",
@@ -334,7 +335,7 @@ month = {January}
 }
 
 @article{Trahan2012,
-title = "Local time-stepping in {R}unge-{K}utta discontinuous {G}alerkin finite element methods applied to the shallow-water equations",
+title = "Local time-stepping in {Runge}-{Kutta} discontinuous {Galerkin} finite element methods applied to the shallow-water equations",
 journal = "Computer Methods in Applied Mechanics and Engineering",
 volume = "217-220",
 pages = "139 - 152",
@@ -343,7 +344,7 @@ author = "Corey J. Trahan and Clint Dawson"
 }
 
 @article{Dawson2013,
-title = "A parallel local timestepping {R}unge–{K}utta discontinuous {G}alerkin method with applications to coastal ocean modeling",
+title = "A parallel local timestepping {Runge}–{Kutta} discontinuous {Galerkin} method with applications to coastal ocean modeling",
 journal = "Computer Methods in Applied Mechanics and Engineering",
 volume = "259",
 pages = "154 - 165",
@@ -386,25 +387,4 @@ year = {2006}
  publisher = {Society for Computer Simulation International},
  address = {San Diego, CA, USA},
  comments = {Edge flipping paper}
-}
-
-@inproceedings{Hassaan2015,
- author = {Hassaan, Muhammad Amber and Nguyen, Donald D. and Pingali, Keshav K.},
- title = {Kinetic Dependence Graphs},
- booktitle = {Proceedings of the Twentieth International Conference on Architectural Support for Programming Languages and Operating Systems},
- series = {ASPLOS '15},
- year = {2015},
- location = {Istanbul, Turkey},
- pages = {457--471},
- numpages = {15},
- publisher = {ACM},
- address = {New York, NY, USA},
- comments = {kinetic dependence graph, ordered algorithms, stable-source and unstable-source algorithms}
-}
-
-@PhdThesis{Hassaan2016,
-author = {Hassaan, Muhammad Amber},
-title = {Parallelization of Ordered Irregular Algorithms},
-school = {University of Texas at Austin},
-year = {2016}
 }
