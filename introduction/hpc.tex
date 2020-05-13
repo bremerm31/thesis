@@ -41,22 +41,19 @@
 
 Task-based programming models have arisen in response to increased hardware concurrency and irregularity. To identify what makes multithreaded code slow, the Ste{\textbar}{\textbar}ar group---who develop HPX---use the acronym SLOW:
 \begin{itemize}
-\item {\bf S}tarvation: cores idling due to insufficient parallelism exposed by the application,                                                                           
-                                                                                      
-\item {\bf L}atency: delays induced by waiting on dependencies, e.g. waiting on messages which are sent through a cluster's interconnect,                                  
-                                                                                      
-\item {\bf O}verhead: additional work performed for a multithreaded application which is unnecessary in a sequential implementation,                                       
-                                                                                      
-\item {\bf W}aiting for contention resolution: delays associated with the accessing of shared resources between threads.                                                   
+\item {\bf S}tarvation: cores idling due to insufficient parallelism exposed by the application,
+\item {\bf L}atency: delays induced by waiting on dependencies, e.g. waiting on messages which are sent through a cluster's interconnect,
+\item {\bf O}verhead: additional work performed for a multithreaded application which is unnecessary in a sequential implementation,
+\item {\bf W}aiting for contention resolution: delays associated with the accessing of shared resources between threads.
 \end{itemize}
-These factors are prevalent in any multi-threaded code including those that use a task-based runtimes. However task-based runtimes aim to outperform their more traditional counterparts by mitigating the impacts of SLOW, e.g. by hiding message latencies or aggressive work stealing to address starvation.
+These factors are prevalent in any multi-threaded code including those that use a task-based runtime. However task-based runtimes aim to outperform their more traditional counterparts by mitigating the impacts of SLOW, e.g. by hiding message latencies or aggressive work stealing to address starvation.
 
-Even as there appears to be no convergence to a single task-based runtime in the HPC community, there appears to be broad agreement on the abstractions being used. Most runtimes favor some task-graph or dataflow based abstraction for algorithm design. Once the task graph has been specified it is give to the runtime to be executed. Another commonly used abstraction is that of globally addressable objects. By making actors or objects globally addressable, the application is able to specify dependencies between objects with similar syntax for both shared and distributed memory parallelizations.
+Even as there appears to be no convergence to a single task-based runtime in the HPC community, there appears to be broad agreement on the abstractions being used. Most runtimes favor some task-graph or dataflow based abstraction for algorithm design. Once the task graph has been specified it is given to the runtime to be executed. Another commonly used abstraction is that of globally addressable objects. By making actors or objects globally addressable, the application is able to specify dependencies between objects with similar syntax for both shared and distributed memory parallelizations.
 
-While simply porting algorithms will certainly allow us to mitigate the impact of hardware irregularity, we have found that in practice this gives small to moderate improvement over existing optimized MPI implementations. 
-In~\cite{Bremer2019}, we found that HPX---one such runtime---gives a speed-up of 1.2 over an MPI implementation on 256 Knights Landing nodes. Results suggest that the speed-up was mainly attributed to page faults for the MPI implementation, rather than avoiding message latencies or MPI overhead. In fact, we suspect that this gap could largely be closed through the use of a better memory allocator for the MPI implementation. 
+While simply porting algorithms will certainly allow us to mitigate the impact of hardware irregularity, we have found that in practice this gives small to moderate improvement over existing optimized MPI implementations.
+In~\cite{Bremer2019}, we found that HPX---one such runtime---gives a speed-up of 1.2 over an MPI implementation on 256 Knights Landing nodes. Results suggest that the speed-up was mainly attributed to page faults for the MPI implementation, rather than avoiding message latencies or MPI overhead. In fact, we suspect that this gap could largely be closed through the use of a better memory allocator for the MPI implementation.
 
-This limited improvement can be attributed to two main factors. Firstly, Moore's law has not yet ended, and we have not yet truly entered the age of extreme heterogenity where managing the SLOW factors will become increasingly important. 
+This limited improvement can be attributed to two main factors. Firstly, Moore's law has not yet ended, and we have not yet truly entered the age of extreme heterogeneity where managing the SLOW factors will become increasingly important.
 Furthermore and specifically related to storm surge, given the relatively modest computational resource requirement of a real-time forecast, the dependence on legacy codes, and the low arithmetic intensity of the storm surge codes (both ADCIRC and low-order DG solvers), there still remains a hesitation to adopt non-CPU based architectures that may provide more FLOPs but whose impact on time to solution is unclear.
 %\todo{Talk more here about expected future architectures}
 
