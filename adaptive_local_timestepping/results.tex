@@ -135,7 +135,12 @@ h_0(x) &= 1,\\
 q_{x,0}(x) &= 0,\\
 z &= 0.
 \end{align*}
-For this problem, differences in the CFL condition are solely a function of differences in cell size, $\Delta x$. The second problem we consider is the Carrier-Greenspan solution, outlined in the previous section. As the water front moves across the mesh, large portions of the mesh wet and dry throughout the simulation, causing these regions to experience large changes in allowable timestep sizes. For the lake at rest problem, the work in each submesh is approximately the same. Thus, we assign submeshes $[6\cdot k, 6 \cdot(k+1))$ to rank $k$. In the case of the Carrier-Greenspan problem, due to the periodic nature of $|\Lambda|$, we load balance over a quarter of the period, i.e. $\tend=\pi/2$ in~\eqref{eq:lb}. The performance data is shown in Table~\ref{tab:performance-data}. For the static uniform Lake at Rest problem, we include a Devastator configuration---labeled as (no CFL)---without the overhead of computing the local CFL in order to provide a more direct comparison with the MPI version, which does not compute the CFL in any configuration.  Each configuration is run 10 times with the average time elapsed, $\bar{T}$ reported in seconds. The standard deviation over the mean $\sigma_T/\bar{T}$ is given in percentages. Lastly, the number of updates and rollbacks are taken from a single run.  
+For this problem, differences in the CFL condition are solely a function of differences in cell size, $\Delta x$. The second problem we consider is the Carrier-Greenspan solution, outlined in the previous section. As the water front moves across the mesh, large portions of the mesh wet and dry throughout the simulation, causing these regions to experience large changes in allowable timestep sizes. For the lake at rest problem, the work in each submesh is approximately the same. Thus, we assign submeshes $[6\cdot k, 6 \cdot(k+1))$ to rank $k$. In the case of the Carrier-Greenspan problem, due to the periodic nature of $|\Lambda|$, we load balance over a quarter of the period, i.e. $\tend=\pi/2$ in~\eqref{eq:lb}. \Pingali{
+For simulations of the Carrier-Greenspan problem on either mesh, we run Gurobi for 6 minutes and then use the best solution found. There are significant variations in the difficulty of the load balancing the problem. For the uniform mesh, the partitioner returns with a solution with an imbalance of $4\%$. For the solution to the polynomial mesh, Gurobi returns a solution with an imbalance of $25\%$. However, Gurobi also reports that a lower bound on the best possible partitioning is $20\%$ indicating that the solution is within $5\%$ of the optimal partitioning.
+}
+
+
+The performance data is shown in Table~\ref{tab:performance-data}. For the static uniform Lake at Rest problem, we include a Devastator configuration---labeled as (no CFL)---without the overhead of computing the local CFL in order to provide a more direct comparison with the MPI version, which does not compute the CFL in any configuration.  Each configuration is run 10 times with the average time elapsed, $\bar{T}$ reported in seconds. The standard deviation over the mean $\sigma_T/\bar{T}$ is given in percentages. Lastly, the number of updates and rollbacks are taken from a single run.  
 
 We begin by noting that the number of cells rolled back is limited. At most 3.5\% of updates are rolled back suggesting that the performance related optimizations do a good job of preventing unnecessary rollback. The lack of rolled back updates for the uniform mesh lake at rest problem shows that we are able to completely avoid bad speculation for this configuration. For the lake at rest problem on the polynomial mesh, it should be possible to infer when messages are incoming since $|\Lambda|$ and $\Delta x$ are fixed. The existence of rollbacks implies that there is still future work to be done to prevent bad speculation.
 
@@ -189,8 +194,97 @@ Furthermore, the impact of load imbalance and rollbacks is approximated by consi
 
 The cumulative performance impacts of the CFL computation and load imbalance are shown in Figure~\ref{fig:imbalance-bars}. This graph compares the speed-up due to work reduction, $S^{work}$ against the observed speed-up $S^{obs}$ and illustrates how the CFL computation and load imbalance account for the discrepancy. It is important to note that a given part of the stacked bar graph multiplies factors below it, e.g. the top of the $Imb+Rb$ bar corresponds to the expected speed-up if the simulation were perfectly balanced {\em and} there was no cost associated with the CFL condition. This distorts the size of bars towards the top of the graph, but allows us to compare the magnitudes of the speed-ups across problem configurations. With these two factors, we are able to account for the discrepancy in expected $S^{work}$ and observed $S^{obs}$ speed-ups within $\maxSpeedupErr\%$.
 
-We also observed that rollback had a limited impact on performance for our experimental configurations.  For the Carrier-Greenspan problem, rollback minimally impacted the imbalance of the simulation with the imbalance metric increasing by no more than \imbCGdtRb{} for either mesh. For the polynomial lake at rest problem, the imbalance of committed updates was only \polynomialImb . However, once rollbacks are taken into consideration the imbalance went up to \polynomialImbwRb . Rollbacks are observed near regions of large CFL variation. For the Carrier-Greenspan problem, the lack of local clustering in the mapping of submeshes to ranks distributed rollbacks across ranks, and the impact of rollbacks on imbalance is relatively limited. However, for the polynomial lake at rest problem, each rank is assigned a contiguous chunk of submeshes, and rollback tends to aggregate on a few ranks.
+We also observed that rollback had a limited impact on performance for our experimental configurations.  For the Carrier-Greenspan problem, rollback minimally impacted the imbalance of the simulation with the imbalance metric increasing by no more than \imbCGdtRb{} for either mesh. For the polynomial lake at rest problem, the imbalance of committed updates was only \polynomialImb . However, once rollbacks are taken into consideration the imbalance went up to \polynomialImbwRb . \Pingali{Detailed discussion of rollback is presented in Section~\ref{sec:results:rollback}.}
 
 Another cause of the performance degradation due to imbalance may be limitations of static load balancing. Firstly, there exist discrepancies between the performance model outlined in Section~\ref{sec:load-balancing} and the observed work done by each submesh, as evidenced by discrepancies between $S^{th}$ and $S^{work}$. Since the load balancing is based on the work of the theoretical model, this may lead to load imbalances, which we are not accounting for. Furthermore, the lower bound for the imbalance of the Carrier-Greenspan problem at the end of the Gurobi partitioning was 20\%. Although this lower bound does not account for the discrepancy between the performance model and observed work as well as error due to the quadrature used to approximate the integral in \eqref{eq:lb}, it suggests that there are underlying limits to how well the partitioner is able to statically load balance the problem. In that case, further reduction in load imbalance would benefit from dynamic load balancing techniques outlined in~\cite{Bremer2018}.
 
 Lastly, we note that while the overhead associated with computing the CFL condition may seem high, it is worth noting that the MPI implementation is not provably stable. For the results presented here, we are able to take optimal timestep sizes, because we are able to analytically determine $(\Lambda / \delta x)_{\max}$. In practice, this value is unobtainable, and the selected $\Delta t$ would either lead to sub-optimal timestepping, i.e. taking timesteps smaller than necessary or manifest instabilities. The local timestepping algorithm can set an arbitrarily small $\Delta t_{\min}$,  and then take appropriately sized timesteps with step-size reductions taken as needed to guarantee stability.
+
+\subsection{Description of Misspeculation}
+\label{sec:results:rollback}
+\Pingali{
+\begin{figure}
+\centering
+\subfloat[Lake at Rest--Uniform\label{fig:rb:actor:lar:uniform}]{\includegraphics{adaptive_local_timestepping/images/lake_at_rest_uniform_actor_work}}\\
+\subfloat[Lake at Rest--Polynomial\label{fig:rb:actor:lar:polynomial}]{\includegraphics{adaptive_local_timestepping/images/lake_at_rest_polynomial_actor_work}}\\
+\subfloat[Carrier-Greenspan--Uniform
+\label{fig:rb:actor:cg:uniform}]{\includegraphics{adaptive_local_timestepping/images/carrier_greenspan_uniform_actor_work}}\\
+\subfloat[Carrier-Greenspan--Polynomial\label{fig:rb:actor:cg:polynomial}]{\includegraphics{adaptive_local_timestepping/images/carrier_greenspan_polynomial_actor_work}}
+\caption{Cumulative number of element updates committed---shown in \cbox{blueplot}---and rolled back---shown in \cbox{orangeplot} updates for each actor.}
+\label{fig:rb:actor}
+\end{figure}
+
+Since we are able to make updates arbitrarily expensive through the addition of cells to a submesh in order to hide task overheads, we only look at rollbacks of non-trivial updates. Events such as push fluxes or updates for which $\lceil t \rceil$ does not match the current simulation time, require little work and rolling them back incurs relatively little overhead.
+To help understand the behavior of rollback for the simulation, we plot the total number of elements updated and rolled-back per {\em actor} in Figure~\ref{fig:rb:actor}. Since all considered problems are one dimensional, the actors are ordered to reflect their positions in the mesh, i.e. actor 0 updates the leftmost submesh, and actor 1 corresponds to the submesh immediately to the right of the leftmost submesh, etc.
+We also plot the commits and rollbacks performed by each {\em rank} in Figure~\ref{fig:rb:rank}. For the lake at rest problem, ranks are assigned 6 contiguous actors. Hence, similar to the actors, the rank ID corresponds to the position relative to other ranks. However, for the Carrier-Greenspan problem, the integer programming problem does not consider submesh locality and any rank may be assigned submeshes from anywhere in the mesh.
+
+
+ For the lake at rest problem on either of the two meshes, shown in Figure \ref{fig:rb:actor:lar:uniform} and \ref{fig:rb:actor:lar:polynomial}, we see that the partitioning strategy creates submeshes which require roughly the same amount of work to update. The partitioning into submeshes assumes no knowledge of the wave speed $\Lambda$ and thus uses $|\Lambda|\equiv 1$. Since this corresponds exactly to the $|\Lambda|$ of the lake at rest problem, we achieve a good distribution of work between actors. In Figure \ref{fig:rb:actor:lar:polynomial}, we note that a few submeshes are assigned significantly less work than the mean amount of work. This arises due to the non-uniform increments in work added by a single cell. In the iterative submesh partitioning process, if a cell which is constraining the CFL condition for a submesh is removed from that submesh, the submesh will take a larger timestep, thus lowering the overall amount of work associated with that given submesh. Figure~\ref{fig:rb:actor:lar:polynomial} shows that near these under worked regions is also where rollback occurs. As seen in Figure~\ref{fig:rb:rank:lar:polynomial}, the ranks which contain these submeshes are assigned less work yet incur significant rollback. Ultimately this speculation causes these ranks to perform the largest number of element updates and determine the critical path of the simulation.
+ 
+For the Lake at Rest-Uniform configuration shown in Figure~\ref{fig:rb:actor:lar:uniform}, the submesh detects stutter stepping after each update and waits. In this case, no updates are rolled back, and due to the balanced submesh partitioning, the imbalance is negligible.
+
+
+For the Carrier-Greenspan problem, we observe that not all submeshes are assigned the same amount of total work, since the flow field is not constant. For the uniform mesh shown in Figure~\ref{fig:rb:actor:cg:uniform}, we note that the number of updates per actor is relatively similar for the left side of the mesh. In the center of the mesh, the cells are wetting and drying as the oscillatory wave passes over them. 
+There is a small amount of rollback occurring, and updates per actor decrease as the water gets shallower. The right portion of the mesh, which does not execute any updates. The Carrier-Greenspan problem on the polynomial mesh heavily distorts the center of submesh. The sharply spiked pattern corresponds to timestep transition regions. The total rollback for both meshes remains low overall, with $1.3\%$ of element updates being rolled back for the uniform mesh and $3.4\%$ of element updates being rolled back for the polynomial mesh. 
+
+\begin{figure}
+\centering
+\subfloat[Predicted $\Delta t$]{\includegraphics{adaptive_local_timestepping/images/theoretical_dt}}
+\subfloat[Observed Rollback]{\includegraphics{adaptive_local_timestepping/images/rollback_temporal}}
+\caption{Temporal occurrence of rollback compared to expected timestep size for the Carrier-Greenspan problem on the uniform mesh.}
+\label{fig:rb:temporal}
+\end{figure}
+
+In Figure~\ref{fig:rb:temporal}, we compare the theoretical timestep size based on the analytic solution against the time-resolved location of rollback for the Carrier-Greenspan problem on the uniform mesh. Rollback in this case tends to only occur near regions where the timestep is changing. At any given point, only a very small number of updates are rolled-back. However, the location of roll-back depends on the solution and therefore cannot be known a priori in general.
+
+
+\begin{figure}
+\centering
+\subfloat[Lake at Rest--Uniform]{\includegraphics{adaptive_local_timestepping/images/lake_at_rest_uniform_rank_work}}\\
+\subfloat[Lake at Rest--Polynomial\label{fig:rb:rank:lar:polynomial}]{\includegraphics{adaptive_local_timestepping/images/lake_at_rest_polynomial_rank_work}}\\
+\subfloat[Carrier-Greenspan--Uniform]{\includegraphics{adaptive_local_timestepping/images/carrier_greenspan_uniform_rank_work}}\\
+\subfloat[Carrier-Greenspan--Polynomial]{\includegraphics{adaptive_local_timestepping/images/carrier_greenspan_polynomial_rank_work}}
+\caption{Cumulative number of element updates committed---shown in \cbox{blueplot}---and rolled back---shown in \cbox{orangeplot} updates for each rank.}
+\label{fig:rb:rank}
+\end{figure}
+
+In Figure~\ref{fig:rb:rank}, we display the amount of work done by each rank throughout the simulation. The plots show that the load balancing approaches do a reasonable job of balancing committed updates across all ranks. To estimate the impact of rollback on the time to solution, we introduce the time averaged imbalance as
+\begin{equation*}
+I_C = \frac{1}{T}\int_0^T \frac{ \max_r u_c(r, t) - \overline{u_c}(t)}{\overline{u_c}(t) } \,\mathrm{d} t,
+\end{equation*}
+where $u_c(r,t)$ is the rate of updates committed on rank $r$ at time $t$, and $\overline{u_c}(t)$ corresponds to the mean number of updates committed at time $t$. We also define the rollback based imbalance as
+\begin{equation*}
+I_{C+RB} = \frac{1}{T} \int_0^T \frac{ \max_r \left(u_c(r,t) + u_{rb}(r,t) \right)- \overline{u_c}(t)}{\overline{u_c}(t) } \,\mathrm{d} t,
+\end{equation*}
+where $u_{rb}(r,t)$ corresponds to the rate of updates rolled back on rank $r$. The aim of comparing the two metrics is to identify what percentage of the performance degradation is due to poor load balance versus misspeculation. The update and rollback densities are estimated by calculating how many updates are rolled back or committed every second.
+In a strictly performance oriented setting, we do not care about the absolute amount of rollback, but rather only about rollback incurred on the critical path, i.e. most overworked rank. In Table~\ref{tab:rb:imb}, we compare the two imbalances for the test cases. For the Carrier-Greenspan problem, we observe that due to the fact that the actors which are rolled back are distributed across many ranks, rollback does not accumulate on any single rank. We estimate that the time to solution would only be $2\%$ faster if we didn't incur any rollback. On the other hand, for the polynomial lake at rest problem, the rollback is confined to only a few ranks. In turn, these ranks slow down the otherwise well balanced problem configuration. We predict that we would observe a $12\%$ reduction in time to solution if this rollback were not present.
+
+\begin{table}
+\centering
+\begin{tabular}{|c | c c c c|}
+\hline & \multicolumn{2}{c}{Lake at Rest} & \multicolumn{2}{c|}{Carrier-Greenspan} \\
+Mesh Type& $I_C$ & $I_{C+RB}$ & $I_C$ & $I_{C+RB}$ \\ \hline
+Uniform  & 1.00 & 1.00 & 1.12 & 1.14\\ \hline
+Polynomial & 1.01 & 1.13 & 1.16 & 1.18\\ \hline
+\end{tabular}
+\caption{Time-averaged imbalance with and without rollback}
+\label{tab:rb:imb}
+\end{table}
+}
+
+\subsection{Conservative Parallel Discrete Event Simulation}
+\Pingali{
+\input{adaptive_local_timestepping/images/conservative_pdes.tex}
+An alternative way to parallelize the algorithm would be through conservative parallel discrete event simulation. Whereas the timewarp based algorithm has a mechanism to correct causality violations. Conservative parallel discrete event simulation requires the program to guarantee that no causality violation can occur. Perhaps the most simple version of a conservative parallel discrete event simulation would be to maintain a global priority queue and execute events with the lowest timestamp. A schematic of elements updating in various timestepping groups is shown in Figure~\ref{fig:cons}. This implementation suffers from insufficient available parallelism and significant synchronization overhead. For the hurricane storm surge problem considered in~\cite{Dawson2013}, a mesh with $\mathcal{O}(10^6)$ elements only has $\mathcal{O}(10^4)$ elements stepping in the smallest timestepping group. Amdahl's law limits the scalability of any such approach.
+
+Conservative parallel discrete event simulations introduce more parallelism into the system through the introduction of {\em look ahead}. If for a given global timestamp, we can ensure that no causality violations can occur over some time interval, all events scheduled within that interval may be safely executed. The use of a global priority queue corresponds to a look ahead of zero. To derive look ahead estimates for systems of conservation laws, we must prove that no push flux---the result of a neighbor updating---will be processed within the look ahead interval. 
+
+To achieve a viable implementation using a conservative parallel discrete event simulation, two major problems need to be resolved. 
+\begin{enumerate}
+\item {\em Energy-based look ahead estimates}: The wavespeed $|\Lambda|$ can be bounded above and below by the energy of the system with a constant for Burgers' equation and the shallow water equations. This intuition provides a useful glimpse into the evolution of $\Lambda$. We know from the Burgers' equation example used in the motivation of this chapter that any look ahead estimate must consider the discrete domain of dependence of the problem. This requires global knowledge since pathological spikes of energy could exist anywhere. 
+However, a hope would be that once initial global communication has occurred, we may be able to derive estimates for local energy growth, and thus bound changes in wavespeed $|\Lambda|$. By determining the growth of $\Lambda$, look ahead estimates can then be determined by deriving lower bounds on when neighboring actors will update.
+
+\item {\em Loosening of TVD properties}: The aim of this thesis is to derive a total variation diminishing timestepping scheme. The analysis used in this chapter requires that the event trace be locally ordered. From a parallel discrete event standpoint, this is problematic as it may generate event cascades, i.e. events scheduled on neighboring actors with the same timestamp. This complicates the derivation of look ahead estimates, because in addition to bounding the growth of $|\Lambda|$, we also need to ensure that no locally ordering violations can occur. Lastly, the binning of timesteps to powers of two of $\Delta t_{\min}$ also presents issues. Given an actor at timestep 10 with a largest allowable timestep of 15, the next update would occur at 24 (i.e. the largest multiple of 8). If however, at time 10, a message is processed that causes the wavespeed to decrease and the allowable timestep increased to 16, the timestep would occur sooner---rather than later---at time 16 (the largest multiple of 16). Thus, there are also cases where lowering the wavespeed causes the proposed timestep to {\em decrease}. We conjecture that the need for locally ordered event traces can be eliminated by relaxing the requirement of total variation diminishing to total variation bounded. Total variation bounded solutions correspond to a larger, but still stable solution class. The relaxation to total variation bounded solutions may be inevitable as we move to higher order timestepping schemes, e.g.~\cite{Constantinescu2007}. Apart from allowing for easier derivation of look ahead estimates, eliminating the locally ordered event trace requirement would also eliminate the need to bin timesteps, reducing the total amount of work  performed.
+\end{enumerate}
+
+Given the difficulties required to obtain meaningful look ahead estimates, we have primarily focused on optimistic speculation in this thesis. Rather than focus on deriving look ahead estimates, we have found it easier to derive tests which identify when speculation is guaranteed to be rolled-back based on local information and then simply wait for the message that causes the rollback of any subsequent events to be processed. Furthermore, given the near optimal performance of the optimistic parallel discrete event simulator for this small problem, we need to identify use cases to motivate development of conservative parallel discrete event simulation.}
